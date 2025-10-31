@@ -1,43 +1,40 @@
 <?php
+require_once dirname(__FILE__).'/../models/database.php';
+require_once dirname(__FILE__).'/../models/phieuYeuCau.php';
+require_once dirname(__FILE__).'/../models/PhieuSuaChua.php';
+require_once dirname(__FILE__).'/../models/PhieuKTTP.php';
+
 class PhieuController {
     protected $db;
-    protected $phieu;        // model PhieuYeuCau (đã có)
-    protected $scModel;      // model PhieuSuaChua (file dưới)
+    protected $phieu;
+    protected $scModel;
+    protected $modelKTTP;
 
-    public function __construct($db) {
-        $this->db = $db;
-
-        require_once dirname(__FILE__).'/../models/phieuYeuCau.php';
-        $this->phieu = new PhieuYeuCau($this->db);
-
-        require_once dirname(__FILE__).'/../models/PhieuSuaChua.php';
-        $this->scModel = new PhieuSuaChua();  // model này tự kết nối mysqli theo config.php
+    public function __construct($db = null) {
+        if ($db) $this->db = $db; else $this->db = new Database();
+        $this->phieu     = new PhieuYeuCau($this->db);
+        $this->scModel   = new PhieuSuaChua();
+        $this->modelKTTP = new PhieuKTTP();
         if (session_id() === '') @session_start();
     }
 
-    /* ================== YÊU CẦU NGUYÊN LIỆU ================== */
-
-    // Danh sách kế hoạch (điểm vào chính để lập phiếu)
+    /* ================== Phiếu YC nguyên liệu (giữ nguyên) ================== */
     public function index() {
         $title = 'Danh sách yêu cầu nhận nguyên liệu';
         $notice_ok   = (isset($_GET['ok']) && $_GET['ok'] === '1');
         $notice_code = isset($_GET['code']) ? trim($_GET['code']) : '';
-
         $q    = isset($_GET['q']) ? trim($_GET['q']) : '';
         $list = $this->phieu->all($q);
-
         include 'app/views/phieu/yeucau_nguyenlieu_index.php';
     }
 
-    // Form lập phiếu
     public function yeucau_nguyenlieu() {
         $title    = 'Thông tin lập phiếu yêu cầu nhận nguyên liệu';
         $msg      = '';
         $kehoach  = null;
         $items    = array();
-        $nextCode = $this->phieu->previewNextCode();   // hiển thị mã dự kiến
+        $nextCode = $this->phieu->previewNextCode();
 
-        // Lấy kế hoạch đổ form
         if (!empty($_GET['id'])) {
             $kehoach = $this->phieu->getKeHoachById($_GET['id']);
             if ($kehoach) {
@@ -50,7 +47,6 @@ class PhieuController {
             }
         }
 
-        // Xác định người lập
         $user = array('maNguoiDung'=>'', 'hoTen'=>'--', 'vaiTro'=>'', 'tenXuong'=>'');
         if (!empty($_SESSION['user']['maNguoiDung'])) {
             $u = $this->phieu->getUserByMa($_SESSION['user']['maNguoiDung']);
@@ -61,13 +57,10 @@ class PhieuController {
             if ($u) $user = $u;
         }
 
-        // Submit
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_POST['maNguoiLap'] = isset($user['maNguoiDung']) ? $user['maNguoiDung'] : '';
             $_POST['nguoiLap']   = isset($user['hoTen'])       ? $user['hoTen']       : '';
-
-            $maPhieu = $this->phieu->create($_POST); // model tự sinh mã dạng PyyMMddNNN
-
+            $maPhieu = $this->phieu->create($_POST);
             if ($maPhieu !== '') {
                 $this->redirect('index.php?controller=phieu&action=index&ok=1&code='.urlencode($maPhieu));
                 return;
@@ -79,57 +72,88 @@ class PhieuController {
         include 'app/views/phieu/yeucau_nguyenlieu.php';
     }
 
-    /* ================== BẢO TRÌ & SỬA CHỮA ================== */
-
-    // Danh sách phiếu sửa chữa
+    /* ================== Bảo trì & sửa chữa (giữ nguyên) ================== */
     public function suachua() {
         $title  = 'Phiếu bảo trì & sửa chữa';
         $phieus = $this->scModel->getAll();
         include 'app/views/phieu/suachua_index.php';
     }
-
-    // Form lập phiếu sửa chữa
     public function add_suachua() {
         $title     = 'Lập phiếu yêu cầu sửa chữa';
         $thietbis  = $this->scModel->getAllThietBi();
         $nhanviens = $this->scModel->getAllNguoiDung();
-
         include 'app/views/phieu/suachua_add.php';
     }
-
-    // Lưu phiếu sửa chữa
     public function save_suachua() {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('index.php?controller=phieu&action=suachua');
-            return;
-        }
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') { $this->redirect('index.php?controller=phieu&action=suachua'); return; }
         $maPhieu    = isset($_POST['maPhieu'])    ? trim($_POST['maPhieu'])    : '';
         $maTB       = isset($_POST['maTB'])       ? trim($_POST['maTB'])       : '';
         $moTaSuCo   = isset($_POST['moTaSuCo'])   ? trim($_POST['moTaSuCo'])   : '';
         $ngayLap    = isset($_POST['ngayLap'])    ? trim($_POST['ngayLap'])    : date('Y-m-d');
         $trangThai  = isset($_POST['trangThai'])  ? trim($_POST['trangThai'])  : 'Chờ xử lý';
         $maNguoiLap = isset($_POST['maNguoiLap']) ? trim($_POST['maNguoiLap']) : '';
-
-        if ($maPhieu === '') {
-            // nếu bạn muốn tự sinh mã: SCyyMMddNNN
-            $maPhieu = $this->scModel->generateNextMa(); // có trong model PhieuSuaChua
-        }
-
+        if ($maPhieu === '') $maPhieu = $this->scModel->generateNextMa();
         $ok = $this->scModel->add($maPhieu, $maTB, $moTaSuCo, $ngayLap, $trangThai, $maNguoiLap);
         $this->redirect('index.php?controller=phieu&action=suachua'.($ok?'':'&error=1'));
     }
-
-    // Xóa phiếu sửa chữa
     public function delete_suachua() {
-        if (empty($_GET['id'])) {
-            $this->redirect('index.php?controller=phieu&action=suachua');
-            return;
-        }
-        $this->scModel->delete($_GET['id']);
+        if (!empty($_GET['id'])) $this->scModel->delete($_GET['id']);
         $this->redirect('index.php?controller=phieu&action=suachua');
     }
 
-    /* ================== Helper ================== */
+    /* ================== PHIẾU KIỂM TRA THÀNH PHẨM ================== */
+    // ❗ Bỏ ràng buộc đăng nhập để test/lưu được ngay
+    public function kttp() {
+        $thanhPhams = $this->modelKTTP->getThanhPhamChoKiemTra();
+        $maPhieu    = $this->modelKTTP->getNextMaPhieu();
+
+        // QC mặc định để test (không cần login)
+        $nguoiQC = 'ND005';
+        $hoTenQC = 'Hoàng Mỹ QC';
+
+        include 'app/views/phieu/kiemtra_TP.php';
+    }
+
+    public function create_kttp() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('index.php?controller=phieu&action=kttp'); return;
+        }
+
+        // QC mặc định (không cần login)
+        $maQC = 'ND005';
+
+        $data = array(
+            'maPhieu'      => isset($_POST['maPhieu']) ? $_POST['maPhieu'] : '',
+            'maTP'         => isset($_POST['maTP']) ? $_POST['maTP'] : '',
+            'SL_KiemTra'   => isset($_POST['SL_KiemTra']) ? (int)$_POST['SL_KiemTra'] : 0,
+            'SL_DatChuan'  => isset($_POST['SL_DatChuan']) ? (int)$_POST['SL_DatChuan'] : 0,
+            'ketQua'       => isset($_POST['ketQua']) ? $_POST['ketQua'] : '',
+            'ngayLap'      => isset($_POST['ngayLap']) ? $_POST['ngayLap'] : date('Y-m-d'),
+            'maNhanVienQC' => $maQC
+        );
+
+        if ($data['maTP']==='') {
+            $this->redirect('index.php?controller=phieu&action=kttp&error=1'); return;
+        }
+
+        $ok = $this->modelKTTP->addPhieuKT($data);
+        $this->redirect('index.php?controller=phieu&action=kttp'.($ok?'&success=1':'&error=1'));
+    }
+
+    // AJAX: luôn trả về số (plain text)
+    public function getSL() {
+        while (ob_get_level() > 0) { @ob_end_clean(); }
+        header('Content-Type: text/plain; charset=utf-8');
+        $sl = 0;
+        if (isset($_POST['maTP'])) {
+            $sl = (int)$this->modelKTTP->getSLTheoTP($_POST['maTP']);
+        }
+        echo $sl;
+        flush();
+        exit;
+    }
+
+    /* ---------------- Helper ---------------- */
     private function redirect($url) {
         if (!headers_sent()) { header('Location: '.$url); exit; }
         echo '<script>location.href='.json_encode($url).';</script>';
@@ -137,3 +161,4 @@ class PhieuController {
         exit;
     }
 }
+?>

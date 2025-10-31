@@ -3,21 +3,20 @@
 $c = isset($_GET['controller']) ? trim($_GET['controller']) : 'dashboard';
 $a = isset($_GET['action'])     ? trim($_GET['action'])     : 'index';
 
-// So sánh không phân biệt hoa/thường cho chắc
 $cl = strtolower($c);
 $al = strtolower($a);
 
 // Nhóm "Quản lý phiếu"
-$phieuControllers = array('phieu','phieuyecau','phieunhapxuat','phieukttp','phieusuachua');
-$inPhieuGroup = in_array($cl, $phieuControllers) || ($cl==='phieu' && $al==='suachua');
+$phieuControllers = array('phieu','phieunhapxuat'); // ❗ bỏ 'phieukttp' vì KTTP nằm trong PhieuController
+$inPhieuGroup = in_array($cl, $phieuControllers) || ($cl==='phieu' && in_array($al, array('index','kttp','suachua')));
 
-// helper active (tương thích PHP 5.2)
+// helper active
 if (!function_exists('nav_active')) {
   function nav_active($cond) { return $cond ? 'active' : ''; }
 }
 
 // Active riêng sửa chữa
-$isSCActive = ($cl==='phieu' && $al==='suachua') || ($cl==='phieusuachua');
+$isSCActive = ($cl==='phieu' && $al==='suachua');
 ?>
 <div class="container">
   <nav class="sidebar">
@@ -32,19 +31,29 @@ $isSCActive = ($cl==='phieu' && $al==='suachua') || ($cl==='phieusuachua');
         <ul class="submenu">
           <li>
             <a href="index.php?controller=phieu&amp;action=index"
-               class="<?php echo nav_active($cl==='phieu' || $cl==='phieuyecau'); ?>">
+               class="<?php echo nav_active($cl==='phieu' && $al==='index'); ?>">
                🧾 Phiếu yêu cầu nguyên liệu
             </a>
           </li>
-          <li><a href="index.php?controller=phieuNhapXuat&amp;action=nhapKhoNL" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='nhapkhoNL'); ?>">📦 Phiếu nhập kho nguyên liệu</a></li>
-          <li><a href="index.php?controller=phieuNhapXuat&amp;action=xuatKhoNL" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='xuatkhoNL'); ?>">🚚 Phiếu xuất kho nguyên liệu</a></li>
-          <li><a href="index.php?controller=phieuNhapXuat&amp;action=nhapKhoTP" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='nhapkhoTP'); ?>">📥 Phiếu nhập kho thành phẩm</a></li>
-          <li><a href="index.php?controller=phieuNhapXuat&amp;action=xuatKhoTP" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='xuatkhoTP'); ?>">📤 Phiếu xuất kho thành phẩm</a></li>
-          <li><a href="index.php?controller=phieuKTTP" class="<?php echo nav_active($cl==='phieukttp'); ?>">🧮 Phiếu kiểm tra thành phẩm</a></li>
 
-          <!-- Gợi ý: gom sửa chữa vào PhieuController -->
+          <!-- Lưu ý: $al đã về lowercase nên so sánh lowercase -->
+          <li><a href="index.php?controller=phieuNhapXuat&amp;action=nhapkhonl" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='nhapkhonl'); ?>">📦 Phiếu nhập kho nguyên liệu</a></li>
+          <li><a href="index.php?controller=phieuNhapXuat&amp;action=xuatkhonl" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='xuatkhonl'); ?>">🚚 Phiếu xuất kho nguyên liệu</a></li>
+          <li><a href="index.php?controller=phieuNhapXuat&amp;action=nhapkhotp" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='nhapkhotp'); ?>">📥 Phiếu nhập kho thành phẩm</a></li>
+          <li><a href="index.php?controller=phieuNhapXuat&amp;action=xuatkhotp" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='xuatkhotp'); ?>">📤 Phiếu xuất kho thành phẩm</a></li>
+
+          <!-- ✅ KTTP đúng route: controller=phieu & action=kttp -->
           <li>
-            <a href="index.php?controller=phieu&amp;action=suachua" class="<?php echo nav_active($isSCActive); ?>">
+            <a href="index.php?controller=phieu&amp;action=kttp"
+               class="<?php echo nav_active($cl==='phieu' && $al==='kttp'); ?>">
+              🧮 Phiếu kiểm tra thành phẩm
+            </a>
+          </li>
+
+          <!-- Sửa chữa gộp trong PhieuController -->
+          <li>
+            <a href="index.php?controller=phieu&amp;action=suachua"
+               class="<?php echo nav_active($isSCActive); ?>">
               🔧 Phiếu bảo trì &amp; sửa chữa
             </a>
           </li>
@@ -54,7 +63,7 @@ $isSCActive = ($cl==='phieu' && $al==='suachua') || ($cl==='phieusuachua');
       <!-- Phân công & sản xuất -->
       <li>
         <a href="index.php?controller=PhanCongCongViecSanXuat"
-           class="<?php echo nav_active($c==='PhanCongCongViecSanXuat' || $cl==='phancongcongviecsanxuat'); ?>">
+           class="<?php echo nav_active($cl==='phancongcongviecsanxuat' || $c==='PhanCongCongViecSanXuat'); ?>">
           ⚙️ Phân công &amp; sản xuất
         </a>
       </li>
