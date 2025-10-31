@@ -18,7 +18,7 @@ class PhieuController {
         if (session_id() === '') @session_start();
     }
 
-    /* ================== Phiếu YC nguyên liệu (giữ nguyên) ================== */
+    /* ================== YÊU CẦU NGUYÊN LIỆU (giữ nguyên) ================== */
     public function index() {
         $title = 'Danh sách yêu cầu nhận nguyên liệu';
         $notice_ok   = (isset($_GET['ok']) && $_GET['ok'] === '1');
@@ -72,7 +72,7 @@ class PhieuController {
         include 'app/views/phieu/yeucau_nguyenlieu.php';
     }
 
-    /* ================== Bảo trì & sửa chữa (giữ nguyên) ================== */
+    /* ================== SỬA CHỮA (giữ nguyên) ================== */
     public function suachua() {
         $title  = 'Phiếu bảo trì & sửa chữa';
         $phieus = $this->scModel->getAll();
@@ -102,7 +102,6 @@ class PhieuController {
     }
 
     /* ================== PHIẾU KIỂM TRA THÀNH PHẨM ================== */
-    // ❗ Bỏ ràng buộc đăng nhập để test/lưu được ngay
     public function kttp() {
         $thanhPhams = $this->modelKTTP->getThanhPhamChoKiemTra();
         $maPhieu    = $this->modelKTTP->getNextMaPhieu();
@@ -123,16 +122,19 @@ class PhieuController {
         $maQC = 'ND005';
 
         $data = array(
-            'maPhieu'      => isset($_POST['maPhieu']) ? $_POST['maPhieu'] : '',
-            'maTP'         => isset($_POST['maTP']) ? $_POST['maTP'] : '',
+            'maPhieu'      => isset($_POST['maPhieu']) ? trim($_POST['maPhieu']) : '',
+            'maTP'         => isset($_POST['maTP']) ? trim($_POST['maTP']) : '',
             'SL_KiemTra'   => isset($_POST['SL_KiemTra']) ? (int)$_POST['SL_KiemTra'] : 0,
             'SL_DatChuan'  => isset($_POST['SL_DatChuan']) ? (int)$_POST['SL_DatChuan'] : 0,
-            'ketQua'       => isset($_POST['ketQua']) ? $_POST['ketQua'] : '',
-            'ngayLap'      => isset($_POST['ngayLap']) ? $_POST['ngayLap'] : date('Y-m-d'),
+            'ketQua'       => isset($_POST['ketQua']) ? trim($_POST['ketQua']) : '',
+            'ngayLap'      => isset($_POST['ngayLap']) ? trim($_POST['ngayLap']) : date('Y-m-d'),
             'maNhanVienQC' => $maQC
         );
 
-        if ($data['maTP']==='') {
+        if ($data['maTP'] === '' || $data['maPhieu'] === '') {
+            $this->redirect('index.php?controller=phieu&action=kttp&error=1'); return;
+        }
+        if ($data['SL_DatChuan'] > $data['SL_KiemTra']) {
             $this->redirect('index.php?controller=phieu&action=kttp&error=1'); return;
         }
 
@@ -140,20 +142,17 @@ class PhieuController {
         $this->redirect('index.php?controller=phieu&action=kttp'.($ok?'&success=1':'&error=1'));
     }
 
-    // AJAX: luôn trả về số (plain text)
+    // AJAX: trả về số lượng theo mã TP
     public function getSL() {
         while (ob_get_level() > 0) { @ob_end_clean(); }
         header('Content-Type: text/plain; charset=utf-8');
         $sl = 0;
-        if (isset($_POST['maTP'])) {
-            $sl = (int)$this->modelKTTP->getSLTheoTP($_POST['maTP']);
-        }
+        if (isset($_POST['maTP'])) $sl = (int)$this->modelKTTP->getSLTheoTP($_POST['maTP']);
         echo $sl;
         flush();
         exit;
     }
 
-    /* ---------------- Helper ---------------- */
     private function redirect($url) {
         if (!headers_sent()) { header('Location: '.$url); exit; }
         echo '<script>location.href='.json_encode($url).';</script>';
@@ -161,4 +160,3 @@ class PhieuController {
         exit;
     }
 }
-?>

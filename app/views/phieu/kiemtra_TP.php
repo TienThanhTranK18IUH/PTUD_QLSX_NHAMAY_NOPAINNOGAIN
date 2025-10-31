@@ -1,4 +1,4 @@
-<?php /* View KTTP — bỏ login, QC hiển thị mặc định do controller truyền vào */ ?>
+<?php /* View KTTP — QC hiển thị mặc định do controller truyền vào */ ?>
 <div class="content" style="margin:20px;">
   <h2 style="margin-bottom:18px;">🧮 Lập phiếu kiểm tra thành phẩm</h2>
 
@@ -13,14 +13,12 @@
   <?php endif; ?>
 
   <form action="index.php?controller=phieu&action=create_kttp" method="post" style="max-width:680px;">
-    <!-- Mã phiếu -->
     <div style="margin-bottom:10px;">
       <label><strong>Mã phiếu:</strong></label><br>
       <input type="text" name="maPhieu" value="<?php echo htmlspecialchars($maPhieu); ?>" readonly
              style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
     </div>
 
-    <!-- Thành phẩm -->
     <div style="margin-bottom:10px;">
       <label><strong>Thành phẩm:</strong></label><br>
       <select name="maTP" id="maTP" required
@@ -34,21 +32,18 @@
       </select>
     </div>
 
-    <!-- Số lượng kiểm tra -->
     <div style="margin-bottom:10px;">
       <label><strong>Số lượng kiểm tra:</strong></label><br>
-      <input type="number" id="slKiemTra" name="SL_KiemTra" readonly
+      <input type="number" id="SL_KiemTra" name="SL_KiemTra" readonly
              style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
     </div>
 
-    <!-- Số lượng đạt chuẩn -->
     <div style="margin-bottom:10px;">
       <label><strong>Số lượng đạt chuẩn:</strong></label><br>
-      <input type="number" id="slDatChuan" name="SL_DatChuan" required
+      <input type="number" id="SL_DatChuan" name="SL_DatChuan" required
              style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
     </div>
 
-    <!-- Kết quả kiểm tra -->
     <div style="margin-bottom:10px;">
       <label><strong>Kết quả kiểm tra:</strong></label><br>
       <select name="ketQua" required
@@ -58,19 +53,16 @@
       </select>
     </div>
 
-    <!-- Ngày lập -->
     <div style="margin-bottom:10px;">
       <label><strong>Ngày lập:</strong></label><br>
       <input type="date" name="ngayLap" value="<?php echo date('Y-m-d'); ?>" required
              style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
     </div>
 
-    <!-- Nhân viên QC (tự động) -->
     <div style="margin-bottom:16px;">
       <label><strong>Nhân viên QC:</strong></label><br>
       <input type="text" value="<?php echo htmlspecialchars($hoTenQC.' ('.$nguoiQC.')'); ?>"
              readonly style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;">
-      <!-- không gửi mã QC từ client; controller gán cứng để test -->
     </div>
 
     <div>
@@ -89,10 +81,9 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   var maTP = document.getElementById('maTP');
-  var slKiemTra = document.getElementById('slKiemTra');
-  var slDatChuan = document.getElementById('slDatChuan');
+  var slKiemTra = document.getElementById('SL_KiemTra');
+  var slDatChuan = document.getElementById('SL_DatChuan');
 
-  // Lấy SL kiểm tra theo TP (AJAX)
   maTP.addEventListener('change', function () {
     var v = this.value;
     if (!v) { slKiemTra.value = ''; return; }
@@ -103,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
     xhr.onload = function(){
       if (xhr.status === 200) {
         var text = xhr.responseText || '';
-        var m = text.match(/(\d+)/);  // bóc số an toàn trong mọi trường hợp
+        var m = text.match(/(\d+)/);
         if (m) slKiemTra.value = parseInt(m[1],10);
         else { alert('⚠️ Phản hồi không hợp lệ:\n' + text.substring(0,200)); slKiemTra.value=''; }
       }
@@ -112,7 +103,6 @@ document.addEventListener('DOMContentLoaded', function () {
     xhr.send('maTP='+encodeURIComponent(v));
   });
 
-  // Không cho SL đạt chuẩn > SL kiểm tra
   slDatChuan.addEventListener('input', function(){
     var kt = parseInt(slKiemTra.value||'0',10);
     var dc = parseInt(slDatChuan.value||'0',10);
