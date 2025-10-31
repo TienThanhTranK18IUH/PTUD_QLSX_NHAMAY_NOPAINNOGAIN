@@ -1,0 +1,36 @@
+2025-10-30 02:32:27 | HEADER BUILD EMPTY
+2025-10-30 02:32:38 | HEADER BUILD EMPTY
+2025-10-30 02:38:12 | HEADER BUILD EMPTY
+2025-10-30 15:52:39 | HEADER BUILD EMPTY
+2025-10-30 16:07:17 | SQL ERROR: Table 'qlsx_nhamay.phieuyecaunguyenlieu' doesn't exist | SQL: INSERT INTO phieuyecaunguyenlieu
+                    (maPhieu, maKeHoach, ghiChu, maXuong, ngayLap, trangThai)
+                 VALUES
+                    ('P251030001', 'KH01', '', 'X01', '2025-10-30', 'ChoDuyet')
+2025-10-30 16:07:28 | SQL ERROR: Table 'qlsx_nhamay.phieuyecaunguyenlieu' doesn't exist | SQL: INSERT INTO phieuyecaunguyenlieu
+                    (maPhieu, maKeHoach, ghiChu, maXuong, ngayLap, trangThai)
+                 VALUES
+                    ('P251030001', 'KH01', '', 'X01', '2025-10-30', 'ChoDuyet')
+2025-10-30 16:14:29 | SQL ERROR: Unknown column 'tenNguyenLieu' in 'field list' | SQL: INSERT INTO chitietphieuyeucaunl
+                            (maPhieu, maNguyenLieu, tenNguyenLieu, donViTinh, soLuong)
+                         VALUES
+                            ('P251030001', 'NL01', 'Da01', 'Kg', 250)
+2025-10-30 16:14:29 | SQL ERROR: Unknown column 'tenNguyenLieu' in 'field list' | SQL: INSERT INTO chitietphieuyeucaunl
+                                (maPhieu, maNguyenLieu, tenNguyenLieu, soLuong)
+                              VALUES
+                                ('P251030001', 'NL01', 'Da01', 250)
+2025-10-30 16:25:30 | SQL ERROR: Unknown column 'tenNguyenLieu' in 'field list' | SQL: INSERT INTO chitietphieuyeucaunl
+                            (maPhieu, maNguyenLieu, tenNguyenLieu, donViTinh, soLuong)
+                         VALUES
+                            ('P251030002', 'NL01', 'Da01', 'Kg', 250)
+2025-10-30 16:25:30 | SQL ERROR: Unknown column 'tenNguyenLieu' in 'field list' | SQL: INSERT INTO chitietphieuyeucaunl
+                                (maPhieu, maNguyenLieu, tenNguyenLieu, soLuong)
+                              VALUES
+                                ('P251030002', 'NL01', 'Da01', 250)
+2025-10-30 16:26:09 | SQL ERROR: Unknown column 'tenNguyenLieu' in 'field list' | SQL: INSERT INTO chitietphieuyeucaunl
+                            (maPhieu, maNguyenLieu, tenNguyenLieu, donViTinh, soLuong)
+                         VALUES
+                            ('P251030003', 'NL01', 'Da01', 'Kg', 250)
+2025-10-30 16:26:09 | SQL ERROR: Unknown column 'tenNguyenLieu' in 'field list' | SQL: INSERT INTO chitietphieuyeucaunl
+                                (maPhieu, maNguyenLieu, tenNguyenLieu, soLuong)
+                              VALUES
+                                ('P251030003', 'NL01', 'Da01', 250)
