@@ -14,12 +14,22 @@ class KeHoachSanXuat {
 
     // Lấy danh sách tất cả kế hoạch
     public function getAll() {
-        $sql = "SELECT kh.maKeHoach, x.tenXuong, dh.tenSP, kh.maDonHang, kh.ngayBatDau, kh.ngayKetThuc,
-                    kh.tongSoLuong, kh.trangThai, kh.maNguyenLieu, kh.soLuongNguyenLieu
+        $sql = "SELECT 
+                    kh.maKeHoach,
+                    x.tenXuong,
+                    dh.tenSP,
+                    kh.maDonHang,
+                    kh.ngayBatDau,
+                    kh.ngayKetThuc,
+                    kh.tongSoLuong,
+                    kh.trangThai,
+                    kh.maNguyenLieu,
+                    kh.tenNguyenLieu,
+                    kh.soLuongNguyenLieu
                 FROM KeHoachSanXuat kh
-                LEFT JOIN Xuong x ON kh.maXuong = x.maXuong
-                LEFT JOIN DonHang dh ON kh.maDonHang = dh.maDonHang
-                ORDER BY kh.ngayBatDau DESC";
+                JOIN Xuong x ON kh.maXuong = x.maXuong
+                JOIN DonHang dh ON kh.maDonHang = dh.maDonHang";
+
 
         $result = mysqli_query($this->conn, $sql);
         if (!$result) {

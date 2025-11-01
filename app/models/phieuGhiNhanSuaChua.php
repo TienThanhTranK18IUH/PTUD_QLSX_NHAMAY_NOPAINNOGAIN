@@ -1,76 +1,80 @@
 <?php
-// app/models/phieuGhiNhanSuaChua.php
-// Bảng: PhieuGhiNhanSuaChua
 require_once dirname(__FILE__) . '/../../config/config.php';
+require_once dirname(__FILE__) . '/Database.php';
 
-class PhieuSuaChua {
-    var $db;
+class PhieuGhiNhanSuaChua {
+    private $db;
 
-    // PHP 5.x constructor
-    function __construct($db) { $this->db = $db; }
-    function PhieuSuaChua($db) { $this->__construct($db); }
-
-    /* ===== Helpers ===== */
-
-    // SELECT qua wrapper -> trả mảng
-    function fetchAll($sql){
-        $rows = $this->db->query($sql);   // Database.php của bạn trả mảng cho SELECT
-        if (is_array($rows)) return $rows;
-
-        // Phòng xa nếu wrapper đổi
-        $out = array();
-        if (is_object($rows) && (get_class($rows)==='mysqli_result' || $rows instanceof mysqli_result)) {
-            while ($r = @mysqli_fetch_assoc($rows)) { $out[] = $r; }
-        }
-        return $out;
+    public function __construct() {
+        $this->db = new Database();
     }
 
-    // Lấy 1 dòng (hoặc null)
-    function fetchOne($sql){
-        $rows = $this->fetchAll($sql);
-        return (count($rows) > 0) ? $rows[0] : null;
+    /* ========================== DANH SÁCH ========================== */
+
+    // 1️⃣ Lấy danh sách phiếu yêu cầu sửa chữa
+    public function layTatCaYeuCau() {
+        $sql = "
+            SELECT yc.maPhieu, yc.maTB, tb.tenTB, yc.trangThai
+            FROM PhieuYeuCauSuaChua yc
+            LEFT JOIN ThietBi tb ON yc.maTB = tb.maTB
+            ORDER BY yc.maPhieu DESC
+        ";
+        return $this->db->query($sql);
     }
 
-    // UPDATE/INSERT/DELETE — kết nối riêng, không đụng Database.php
-    function execNonQuery($sql){
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-        if ($conn->connect_error) return false;
-        if (defined('DB_CHARSET')) $conn->set_charset(DB_CHARSET);
-        $ok = $conn->query($sql) ? true : false;
-        $conn->close();
-        return $ok;
+    // 2️⃣ Lấy danh sách phiếu ghi nhận sửa chữa
+    public function layTatCaPhieuGhiNhan() {
+        $sql = "
+            SELECT maPhieu, maPhieuYCSC, noiDung, ngayHoanThanh, 
+                   maNguoiDung, trangThai
+            FROM PhieuGhiNhanSuaChua
+            ORDER BY maPhieu DESC
+        ";
+        return $this->db->query($sql);
     }
 
-    /* ===== APIs ===== */
+    /* ========================== CHI TIẾT ========================== */
 
-    // Danh sách phiếu (giao diện 1)
-    function getAllRequests() {
-        $sql = "SELECT maPhieu, maPhieuYCSC, noiDung, ngayHoanThanh,
-                       maNhanVienKyThuat, maThietBi, tenThietBi, trangThai
-                  FROM PhieuGhiNhanSuaChua
-              ORDER BY maPhieu DESC";
-        return $this->fetchAll($sql);
+    // 3️⃣ Lấy chi tiết phiếu ghi nhận theo mã
+    public function layTheoMa($maPhieu) {
+        $maPhieu = $this->db->conn->real_escape_string($maPhieu);
+        $sql = "SELECT * FROM PhieuGhiNhanSuaChua WHERE maPhieu = '$maPhieu' LIMIT 1";
+        $data = $this->db->query($sql);
+        return !empty($data) ? $data[0] : null;
     }
 
-    // Lấy 1 phiếu theo mã (form sửa – giao diện 2)
-    function getById($maPhieu) {
-        $maPhieu = addslashes($maPhieu);
-        $sql = "SELECT * FROM PhieuGhiNhanSuaChua WHERE maPhieu = '".$maPhieu."' LIMIT 1";
-        return $this->fetchOne($sql);
+    /* ========================== CẬP NHẬT / THÊM ========================== */
+
+    // 4️⃣ Thêm phiếu mới (khi ghi nhận từ phiếu yêu cầu)
+    public function themPhieu($maPhieuYCSC, $ngayHoanThanh, $noiDung, $maNguoiDung, $trangThai) {
+        $maPhieuYCSC   = $this->db->conn->real_escape_string($maPhieuYCSC);
+        $ngayHoanThanh = $this->db->conn->real_escape_string($ngayHoanThanh);
+        $noiDung       = $this->db->conn->real_escape_string($noiDung);
+        $maNguoiDung   = $this->db->conn->real_escape_string($maNguoiDung);
+        $trangThai     = $this->db->conn->real_escape_string($trangThai);
+
+        $sql = "
+            INSERT INTO PhieuGhiNhanSuaChua (maPhieuYCSC, noiDung, ngayHoanThanh, trangThai, maNguoiDung)
+            VALUES ('$maPhieuYCSC', '$noiDung', '$ngayHoanThanh', '$trangThai', '$maNguoiDung')
+        ";
+        return $this->db->conn->query($sql);
     }
 
-    // Cập nhật thông tin phiếu (bấm “Lưu thay đổi”)
-    function update($maPhieu, $ngayHoanThanh, $trangThai, $noiDung) {
-        $maPhieu       = addslashes($maPhieu);
-        $ngayHoanThanh = addslashes($ngayHoanThanh);
-        $trangThai     = addslashes($trangThai);
-        $noiDung       = addslashes($noiDung);
+    // 5️⃣ Cập nhật phiếu ghi nhận có sẵn
+    public function capNhatPhieu($maPhieu, $ngayHoanThanh, $trangThai, $noiDung) {
+        $maPhieu       = $this->db->conn->real_escape_string($maPhieu);
+        $ngayHoanThanh = $this->db->conn->real_escape_string($ngayHoanThanh);
+        $trangThai     = $this->db->conn->real_escape_string($trangThai);
+        $noiDung       = $this->db->conn->real_escape_string($noiDung);
 
-        $sql = "UPDATE PhieuGhiNhanSuaChua
-                   SET ngayHoanThanh = '".$ngayHoanThanh."',
-                       trangThai     = '".$trangThai."',
-                       noiDung       = '".$noiDung."'
-                 WHERE maPhieu      = '".$maPhieu."'";
-        return $this->execNonQuery($sql);
+        $sql = "
+            UPDATE PhieuGhiNhanSuaChua 
+            SET ngayHoanThanh = '$ngayHoanThanh', 
+                trangThai = '$trangThai', 
+                noiDung = '$noiDung'
+            WHERE maPhieu = '$maPhieu'
+        ";
+        return $this->db->conn->query($sql);
     }
 }
+?>

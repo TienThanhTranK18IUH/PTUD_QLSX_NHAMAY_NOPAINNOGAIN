@@ -12,6 +12,7 @@
                 <th>Tổng SL</th>
                 <th>Trạng thái</th>
                 <th>Mã NL</th>
+                <th>Tên nguyên liệu</th> <!-- 🆕 Cột mới -->
                 <th>SL Nguyên liệu</th>
             </tr>
         </thead>
@@ -29,11 +30,12 @@
                 echo '<td align="center">' . $kh['tongSoLuong'] . '</td>';
                 echo '<td>' . $kh['trangThai'] . '</td>';
                 echo '<td>' . $kh['maNguyenLieu'] . '</td>';
+                echo '<td>' . $kh['tenNguyenLieu'] . '</td>'; // 🆕 Cột mới
                 echo '<td align="center">' . $kh['soLuongNguyenLieu'] . '</td>';
                 echo '</tr>';
             }
         } else {
-            echo '<tr><td colspan="10">Không có dữ liệu kế hoạch</td></tr>';
+            echo '<tr><td colspan="11">Không có dữ liệu kế hoạch</td></tr>';
         }
         ?>
         </tbody>

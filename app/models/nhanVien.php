@@ -1,84 +1,76 @@
 <?php
 require_once dirname(__FILE__) . '/Database.php';
-require_once dirname(__FILE__) . '/../../config/config.php';
 
 class NhanVien {
-
-    /** @var Database */
-    private $db;     // dùng cho SELECT -> trả mảng
-    /** @var mysqli  */
-    private $conn;   // dùng cho INSERT/UPDATE/DELETE (prepare/bind)
+    private $db;
+    private $conn;
 
     public function __construct() {
-        // Database.php hiện tại KHÔNG có getInstance()/getConnection()
-        // => ta chủ động tạo 1 Database cho SELECT
         $this->db = new Database();
-
-        // và tự mở 1 kết nối mysqli riêng cho ghi (INSERT/UPDATE/DELETE)
-        $this->conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-        if ($this->conn->connect_error) {
-            die('DB connect error: ' . $this->conn->connect_error);
-        }
-        if (defined('DB_CHARSET') && DB_CHARSET) {
-            @$this->conn->set_charset(DB_CHARSET);
-        }
+        $this->conn = $this->db->conn;
     }
 
-    // Lấy tất cả nhân viên
+    // ====== Lấy tất cả nhân viên đang hoạt động ======
     public function getAll() {
-        $sql = "SELECT maNguoiDung, tenDangNhap, hoTen, vaiTro, trangThai
-                FROM NguoiDung
+        $sql = "SELECT maNguoiDung AS maNhanVien, hoTen AS tenNhanVien, gioiTinh, ngaySinh, diaChi, 
+                       soDienThoai, email, vaiTro AS chucVu, trangThai 
+                FROM NguoiDung 
+                WHERE trangThai = 'HoatDong'
                 ORDER BY maNguoiDung ASC";
-        return $this->db->query($sql); // trả về mảng
+        return $this->db->query($sql);
     }
 
-    // Lấy nhân viên theo ID
+    // ====== Lấy 1 nhân viên theo ID ======
     public function getById($id) {
-        $id = intval($id);
-        $rows = $this->db->query("SELECT * FROM NguoiDung WHERE maNguoiDung = {$id} LIMIT 1");
-        return (is_array($rows) && count($rows) > 0) ? $rows[0] : null;
+        $id = $this->conn->real_escape_string($id);
+        $sql = "SELECT maNguoiDung AS maNhanVien, hoTen AS tenNhanVien, gioiTinh, ngaySinh, diaChi, 
+                       soDienThoai, email, vaiTro AS chucVu, trangThai 
+                FROM NguoiDung WHERE maNguoiDung='$id' LIMIT 1";
+        $rows = $this->db->query($sql);
+        return !empty($rows) ? $rows[0] : null;
     }
 
-    // Thêm nhân viên mới
-    public function insert($tenDangNhap, $matKhau, $hoTen, $vaiTro) {
-        $sql = "INSERT INTO NguoiDung (tenDangNhap, matKhau, hoTen, vaiTro)
-                VALUES (?, ?, ?, ?)";
-        $stmt = $this->conn->prepare($sql);
-        if (!$stmt) return false;
-        $stmt->bind_param("ssss", $tenDangNhap, $matKhau, $hoTen, $vaiTro);
-        $ok = $stmt->execute();
-        $stmt->close();
-        return $ok;
+    // ====== Thêm nhân viên ======
+    public function insert($tenNhanVien, $gioiTinh, $ngaySinh, $diaChi, $soDienThoai, $email, $chucVu, $trangThai = 'HoatDong') {
+        $tenNhanVien = $this->conn->real_escape_string($tenNhanVien);
+        $gioiTinh = $this->conn->real_escape_string($gioiTinh);
+        $ngaySinh = $this->conn->real_escape_string($ngaySinh);
+        $diaChi = $this->conn->real_escape_string($diaChi);
+        $soDienThoai = $this->conn->real_escape_string($soDienThoai);
+        $email = $this->conn->real_escape_string($email);
+        $chucVu = $this->conn->real_escape_string($chucVu);
+        $trangThai = $this->conn->real_escape_string($trangThai);
+
+        $sql = "INSERT INTO NguoiDung (hoTen, gioiTinh, ngaySinh, diaChi, soDienThoai, email, vaiTro, trangThai)
+                VALUES ('$tenNhanVien', '$gioiTinh', '$ngaySinh', '$diaChi', '$soDienThoai', '$email', '$chucVu', '$trangThai')";
+        return $this->db->query($sql);
     }
 
-    // Cập nhật thông tin nhân viên
-    public function update($id, $hoTen, $vaiTro, $trangThai) {
-        $sql = "UPDATE NguoiDung SET hoTen = ?, vaiTro = ?, trangThai = ?
-                WHERE maNguoiDung = ?";
-        $stmt = $this->conn->prepare($sql);
-        if (!$stmt) return false;
-        $id = intval($id);
-        $stmt->bind_param("sssi", $hoTen, $vaiTro, $trangThai, $id);
-        $ok = $stmt->execute();
-        $stmt->close();
-        return $ok;
+    // ====== Cập nhật nhân viên ======
+    public function update($id, $tenNhanVien, $gioiTinh, $ngaySinh, $diaChi, $soDienThoai, $email, $chucVu, $trangThai) {
+        $id = $this->conn->real_escape_string($id);
+        $tenNhanVien = $this->conn->real_escape_string($tenNhanVien);
+        $gioiTinh = $this->conn->real_escape_string($gioiTinh);
+        $ngaySinh = $this->conn->real_escape_string($ngaySinh);
+        $diaChi = $this->conn->real_escape_string($diaChi);
+        $soDienThoai = $this->conn->real_escape_string($soDienThoai);
+        $email = $this->conn->real_escape_string($email);
+        $chucVu = $this->conn->real_escape_string($chucVu);
+        $trangThai = $this->conn->real_escape_string($trangThai);
+
+        $sql = "UPDATE NguoiDung
+                SET hoTen='$tenNhanVien', gioiTinh='$gioiTinh', ngaySinh='$ngaySinh',
+                    diaChi='$diaChi', soDienThoai='$soDienThoai', email='$email',
+                    vaiTro='$chucVu', trangThai='$trangThai'
+                WHERE maNguoiDung='$id'";
+        return $this->db->query($sql);
     }
 
-    // Xóa nhân viên
+    // ====== Xóa mềm (đổi trạng thái sang 'Ngung') ======
     public function delete($id) {
-        $sql = "DELETE FROM NguoiDung WHERE maNguoiDung = ?";
-        $stmt = $this->conn->prepare($sql);
-        if (!$stmt) return false;
-        $id = intval($id);
-        $stmt->bind_param("i", $id);
-        $ok = $stmt->execute();
-        $stmt->close();
-        return $ok;
-    }
-
-    public function __destruct() {
-        if ($this->conn) { @$this->conn->close(); }
-        // $this->db sẽ tự đóng trong destructor của Database.php
+        $id = $this->conn->real_escape_string($id);
+        $sql = "UPDATE NguoiDung SET trangThai='Ngung' WHERE maNguoiDung='$id'";
+        return $this->db->query($sql);
     }
 }
 ?>

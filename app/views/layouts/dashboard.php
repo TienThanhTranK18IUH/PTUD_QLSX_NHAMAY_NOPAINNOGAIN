@@ -1,48 +1,44 @@
-<div class="dashboard">
-  <h2>📋 BẢNG ĐIỀU KHIỂN CHÍNH</h2>
-  <p>Chào mừng bạn đến với hệ thống <b>Quản lý sản xuất nhà máy</b>.</p>
+<style>
+  body {
+    font-family: "Segoe UI", sans-serif;
+    background-color: #f5f7fa;
+    margin: 0;
+    padding: 0;
+  }
 
-  <div class="cards">
-    <div class="card">
-      <div class="card-icon">👷</div>
-      <h3>Nhân sự</h3>
-      <p>Quản lý hồ sơ nhân viên, phân công ca làm việc.</p>
-      <a href="index.php?controller=nhanVien" class="card-btn">Xem chi tiết</a>
-    </div>
+  .dashboard-container {
+    text-align: center;
+    padding: 0;
+    margin: 0;
+  }
 
-    <div class="card">
-      <div class="card-icon">🗂</div>
-      <h3>Kế hoạch sản xuất</h3>
-      <p>Lập, duyệt và theo dõi tiến độ kế hoạch sản xuất.</p>
-      <a href="index.php?controller=keHoach" class="card-btn">Xem chi tiết</a>
-    </div>
+  .dashboard-image {
+    width: 100%;
+    height: auto;
+    border-radius: 0; /* bỏ bo góc để tràn tự nhiên */
+    display: block;
+    margin: 0;
+    box-shadow: none;
+    animation: fadeUp 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
 
-    <div class="card">
-      <div class="card-icon">🏢</div>
-      <h3>Kho nguyên liệu</h3>
-      <p>Theo dõi nhập, xuất và tồn kho nguyên liệu.</p>
-      <a href="index.php?controller=kho&action=nguyenlieu" class="card-btn">Xem chi tiết</a>
-    </div>
+  @keyframes fadeUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
-    <div class="card">
-      <div class="card-icon">📦</div>
-      <h3>Thành phẩm</h3>
-      <p>Quản lý kho thành phẩm và kết quả kiểm tra chất lượng.</p>
-      <a href="index.php?controller=kho&action=thanhpham" class="card-btn">Xem chi tiết</a>
-    </div>
+  footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+    font-size: 14px;
+  }
+</style>
+<div class="dashboard-container">
+<img src="/PTUD_QLSX_NHAMAY_NOPAINNOGAIN1/public/img/logo.jpg" alt="Logo Nhà máy" class="dashboard-image">
 
-    <div class="card">
-      <div class="card-icon">🔧</div>
-      <h3>Bảo trì & sửa chữa</h3>
-      <p>Lập phiếu, theo dõi lịch và tiến độ sửa chữa thiết bị.</p>
-      <a href="index.php?controller=baoTri" class="card-btn">Xem chi tiết</a>
-    </div>
-
-    <div class="card">
-      <div class="card-icon">📊</div>
-      <h3>Thống kê & báo cáo</h3>
-      <p>Xem báo cáo tổng hợp về sản xuất và tồn kho.</p>
-      <a href="index.php?controller=thongKe" class="card-btn">Xem chi tiết</a>
-    </div>
-  </div>
 </div>

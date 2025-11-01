@@ -1,48 +1,65 @@
 <?php
-/**
- * BaoTriController — Danh sách + Sửa inline phiếu ghi nhận sửa chữa
- */
 require_once dirname(__FILE__) . '/../../config/config.php';
-require_once dirname(__FILE__) . '/../models/Database.php';            // wrapper của bạn
-require_once dirname(__FILE__) . '/../models/phieuGhiNhanSuaChua.php'; // class PhieuSuaChua
+require_once dirname(__FILE__) . '/../models/Database.php';
+require_once dirname(__FILE__) . '/../models/phieuGhiNhanSuaChua.php';
 
 class BaoTriController {
-    var $model;
+    private $model;
 
-    // PHP 5.x constructor
-    function BaoTriController() {
-        $db = new Database();
-        $this->model = new PhieuSuaChua($db);
+    public function __construct() {
+        $this->model = new PhieuGhiNhanSuaChua();
     }
 
-    function index() {
-        // Lưu cập nhật
+    public function index() {
+        // Nếu lưu form sửa / thêm
         if (isset($_POST['btnSave'])) {
-            $maPhieu       = isset($_POST['maPhieu'])       ? $_POST['maPhieu']       : '';
+            $maPhieuYCSC   = isset($_POST['maPhieuYCSC']) ? $_POST['maPhieuYCSC'] : '';
+            $maPhieu       = isset($_POST['maPhieu']) ? $_POST['maPhieu'] : '';
             $ngayHoanThanh = isset($_POST['ngayHoanThanh']) ? $_POST['ngayHoanThanh'] : '';
-            $trangThai     = isset($_POST['trangThai'])     ? $_POST['trangThai']     : '';
-            $noiDung       = isset($_POST['noiDung'])       ? $_POST['noiDung']       : '';
+            $trangThai     = isset($_POST['trangThai']) ? $_POST['trangThai'] : '';
+            $noiDung       = isset($_POST['noiDung']) ? $_POST['noiDung'] : '';
+            // TODO: lấy mã người dùng từ session nếu có
+            $maNguoiDung   = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'ND006';
 
-            $ok = $this->model->update($maPhieu, $ngayHoanThanh, $trangThai, $noiDung);
-            if ($ok) {
-                echo "<script>alert('✔️ Cập nhật thành công!');location.href='index.php?controller=baotri&action=index';</script>";
+            if ($maPhieu == '') {
+                // Thêm mới phiếu ghi nhận (nếu người dùng bấm Ghi nhận từ phiếu yêu cầu)
+                $ok = $this->model->themPhieu($maPhieuYCSC, $ngayHoanThanh, $noiDung, $maNguoiDung, $trangThai);
             } else {
-                echo "<script>alert('❌ Cập nhật thất bại!');location.href='index.php?controller=baotri&action=index&maPhieu="
-                     . urlencode($maPhieu) . "';</script>";
+                // Cập nhật phiếu đã có
+                $ok = $this->model->capNhatPhieu($maPhieu, $ngayHoanThanh, $trangThai, $noiDung);
             }
-            exit;
+
+            if ($ok) {
+                echo "<script>alert('✔️ Lưu dữ liệu thành công!');location.href='index.php?controller=baotri&action=index';</script>";
+                exit;
+            } else {
+                echo "<script>alert('❌ Lưu thất bại!');</script>";
+            }
         }
 
-        // Nếu chọn Sửa
+        // Nếu bấm "Sửa" phiếu ghi nhận (đến từ danh sách ghi nhận)
         $phieuEdit = null;
         if (!empty($_GET['maPhieu'])) {
-            $phieuEdit = $this->model->getById($_GET['maPhieu']);
+            $phieuEdit = $this->model->layTheoMa($_GET['maPhieu']);
         }
 
-        // Danh sách
-        $dsPhieu = $this->model->getAllRequests();
+        // Nếu bấm "Ghi nhận" trên dòng phiếu yêu cầu => mở form để thêm ghi nhận
+        if (!empty($_GET['maPhieuYCSC'])) {
+            $phieuEdit = array(
+                'maPhieu' => '',
+                'maPhieuYCSC' => $_GET['maPhieuYCSC'],
+                'ngayHoanThanh' => '',
+                'trangThai' => 'Đang xử lý',
+                'noiDung' => ''
+            );
+        }
 
-        // View
+        // Lấy dữ liệu hiển thị: tách 2 danh sách
+        $dsYeuCau  = $this->model->layTatCaYeuCau();         // danh sách từ PhieuYeuCauSuaChua
+        $dsGhiNhan = $this->model->layTatCaPhieuGhiNhan();   // danh sách từ PhieuGhiNhanSuaChua
+
+        // Gọi view
         include dirname(__FILE__) . '/../views/phieu/ghinhansuachua.php';
     }
 }
+?>
