@@ -38,7 +38,7 @@ $isSCActive = ($cl==='phieu' && $al==='suachua');
 
           <li><a href="index.php?controller=phieuNhapXuat&amp;action=nhapkhonl" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='nhapkhonl'); ?>">📦 Phiếu nhập kho nguyên liệu</a></li>
           <li><a href="index.php?controller=phieuNhapXuat&amp;action=xuatkhonl" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='xuatkhonl'); ?>">🚚 Phiếu xuất kho nguyên liệu</a></li>
-          <li><a href="index.php?controller=phieuNhapXuat&amp;action=nhapkhotp" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='nhapkhotp'); ?>">📥 Phiếu nhập kho thành phẩm</a></li>
+          <li><a href="index.php?controller=phieu&amp;action=pnk_index" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='nhapkhotp'); ?>">📥 Phiếu nhập kho thành phẩm</a></li>
           <li><a href="index.php?controller=phieuNhapXuat&amp;action=xuatkhotp" class="<?php echo nav_active($cl==='phieunhapxuat' && $al==='xuatkhotp'); ?>">📤 Phiếu xuất kho thành phẩm</a></li>
 
           <!-- KTTP trong PhieuController -->

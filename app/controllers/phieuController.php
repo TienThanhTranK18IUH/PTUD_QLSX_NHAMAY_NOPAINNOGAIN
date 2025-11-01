@@ -159,4 +159,79 @@ class PhieuController {
         echo '<noscript><meta http-equiv="refresh" content="0;url='.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'"></noscript>';
         exit;
     }
+/* ================== PHIẾU NHẬP KHO THÀNH PHẨM ================== */
+public function pnk_index() {
+    require_once dirname(__FILE__) . '/../models/PhieuNhapKho.php';
+    $modelPNK = new PhieuNhapKho($this->db);
+
+    $title = 'Danh sách Phiếu Nhập Kho Thành Phẩm';
+    $dsPhieu = $modelPNK->getAllPhieu();
+
+    include 'app/views/phieu/danhSachPhieu.php';
+}
+
+public function pnk_taoPhieu() {
+    require_once dirname(__FILE__) . '/../models/PhieuNhapKho.php';
+    $modelPNK = new PhieuNhapKho($this->db);
+
+    $title = 'Lập Phiếu Nhập Kho Thành Phẩm';
+    $maPhieu = $modelPNK->getNextMaPhieu();
+    $dsThanhPham = $modelPNK->getAllThanhPham();
+    $dsKho = $modelPNK->getAllKho();
+
+    include 'app/views/phieu/PhieuNhapKho.php';
+}
+
+public function pnk_luuPhieu() {
+    require_once dirname(__FILE__) . '/../models/PhieuNhapKho.php';
+    $modelPNK = new PhieuNhapKho($this->db);
+
+    // Kiểm tra request hợp lệ
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('Location: index.php?controller=phieu&action=pnk_index');
+        exit;
+    }
+
+    // Lấy dữ liệu từ form
+    $maPhieu     = isset($_POST['maPhieu']) ? trim($_POST['maPhieu']) : '';
+    $maTP        = isset($_POST['maTP']) ? trim($_POST['maTP']) : '';
+    $tenTP       = isset($_POST['tenTP']) ? trim($_POST['tenTP']) : '';
+    $maKho       = isset($_POST['maKho']) ? trim($_POST['maKho']) : 'K002';
+    $soLuong     = isset($_POST['soLuong']) ? intval($_POST['soLuong']) : 0;
+    $maNguoiLap  = isset($_POST['maNguoiLap']) ? trim($_POST['maNguoiLap']) : 'ND004';
+    $ngayNhap    = date('Y-m-d');
+
+    // Kiểm tra dữ liệu hợp lệ
+    if ($maPhieu == '' || $maTP == '' || $soLuong <= 0) {
+        header('Location: index.php?controller=phieu&action=pnk_taoPhieu&error=1');
+        exit;
+    }
+
+    // Chuẩn bị dữ liệu
+    $data = array(
+        'maPhieu'    => $maPhieu,
+        'maTP'       => $maTP,
+       
+        'maKho'      => $maKho,
+        'soLuong'    => $soLuong,
+        'ngayNhap'   => $ngayNhap,
+        'maNguoiLap' => $maNguoiLap,
+        'trangThai'  => 'Đã nhập'
+    );
+
+    // Gọi model để lưu
+    $ok = $modelPNK->create($data);
+
+    if ($ok) {
+        header('Location: index.php?controller=phieu&action=pnk_index&ok=1');
+        exit;
+    } else {
+        header('Location: index.php?controller=phieu&action=pnk_taoPhieu&error=2');
+        exit;
+    }
+}
+
+
+
+
 }

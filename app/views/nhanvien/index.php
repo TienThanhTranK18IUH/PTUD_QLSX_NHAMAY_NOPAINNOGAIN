@@ -17,6 +17,7 @@
                 <th>Điện thoại</th>
                 <th>Email</th>
                 <th>Chức vụ</th>
+                <th>Xưởng</th>
                 <th>Trạng thái</th>
                 <th>Thao tác</th>
             </tr>
@@ -26,23 +27,24 @@
             if (!empty($nhanviens)) {
                 foreach ($nhanviens as $nv) {
                     echo "<tr>";
-                    echo "<td align='center'>{$nv['maNhanVien']}</td>";
-                    echo "<td>{$nv['tenNhanVien']}</td>";
+                    echo "<td align='center'>{$nv['maNguoiDung']}</td>";
+                    echo "<td>{$nv['hoTen']}</td>";
                     echo "<td align='center'>{$nv['gioiTinh']}</td>";
                     echo "<td align='center'>{$nv['ngaySinh']}</td>";
                     echo "<td>{$nv['diaChi']}</td>";
                     echo "<td align='center'>{$nv['soDienThoai']}</td>";
                     echo "<td>{$nv['email']}</td>";
-                    echo "<td align='center'>{$nv['chucVu']}</td>";
+                    echo "<td align='center'>{$nv['vaiTro']}</td>";
+                    echo "<td align='center'>{$nv['tenXuong']}</td>";
                     echo "<td align='center'>{$nv['trangThai']}</td>";
                     echo "<td align='center'>
-                            <a href='index.php?controller=nhanvien&action=edit&id={$nv['maNhanVien']}' style='color:#2980b9;'>✏️ Sửa</a> |
-                            <a href='index.php?controller=nhanvien&action=delete&id={$nv['maNhanVien']}' onclick=\"return confirm('Xóa nhân viên này?');\" style='color:#c0392b;'>🗑️ Xóa</a>
+                            <a href='index.php?controller=nhanvien&action=edit&id={$nv['maNguoiDung']}' style='color:#2980b9;'>✏️ Sửa</a> |
+                            <a href='index.php?controller=nhanvien&action=delete&id={$nv['maNguoiDung']}' onclick=\"return confirm('Bạn có chắc muốn xóa nhân viên này?');\" style='color:#c0392b;'>🗑️ Xóa</a>
                           </td>";
                     echo "</tr>";
                 }
             } else {
-                echo "<tr><td colspan='10' align='center'>Không có dữ liệu nhân viên</td></tr>";
+                echo "<tr><td colspan='11' align='center'>Không có dữ liệu nhân viên</td></tr>";
             }
             ?>
         </tbody>

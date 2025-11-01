@@ -1,79 +1,81 @@
 <div class="content">
-    <h2>➕ Thêm nhân viên mới</h2>
+    <h2>➕ Thêm người dùng mới</h2>
 
-    <form method="POST" action="index.php?controller=nhanvien&action=add">
-        <table cellpadding="8" cellspacing="0">
-            <tr>
-                <td><b>Họ tên:</b></td>
-                <td><input type="text" name="tenNhanVien" placeholder="Nhập họ tên nhân viên" required></td>
-            </tr>
+    <?php
+    if (isset($_GET['ok']) && $_GET['ok'] == 1) {
+        echo '<p style="color:green;font-weight:bold;">✅ Thêm người dùng thành công!</p>';
+    } elseif (isset($_GET['error'])) {
+        echo '<p style="color:red;font-weight:bold;">❌ Lỗi khi lưu dữ liệu!</p>';
+    }
+    ?>
 
-            <tr>
-                <td><b>Giới tính:</b></td>
-                <td>
-                    <select name="gioiTinh" required>
-                        <option value="">-- Chọn giới tính --</option>
-                        <option value="Nam">Nam</option>
-                        <option value="Nữ">Nữ</option>
-                    </select>
-                </td>
-            </tr>
+    <form method="POST" action="index.php?controller=nhanvien&action=add"
+          style="max-width:650px; background:#fafafa; padding:20px; border-radius:8px; box-shadow:0 0 6px rgba(0,0,0,0.1);">
 
-            <tr>
-                <td><b>Ngày sinh:</b></td>
-                <td><input type="date" name="ngaySinh"></td>
-            </tr>
+        <label><b>Tên đăng nhập:</b></label><br>
+        <input type="text" name="tenDangNhap" placeholder="Tên đăng nhập" required style="width:100%;"><br><br>
 
-            <tr>
-                <td><b>Địa chỉ:</b></td>
-                <td><input type="text" name="diaChi" placeholder="Nhập địa chỉ..."></td>
-            </tr>
+        <label><b>Mật khẩu:</b></label><br>
+        <input type="password" name="matKhau" placeholder="Mật khẩu" required style="width:100%;"><br><br>
 
-            <tr>
-                <td><b>Số điện thoại:</b></td>
-                <td><input type="text" name="soDienThoai" placeholder="VD: 0987654321"></td>
-            </tr>
+        <label><b>Họ tên:</b></label><br>
+        <input type="text" name="hoTen" placeholder="Nhập họ tên" required style="width:100%;"><br><br>
 
-            <tr>
-                <td><b>Email:</b></td>
-                <td><input type="email" name="email" placeholder="example@gmail.com"></td>
-            </tr>
+        <label><b>Giới tính:</b></label><br>
+        <select name="gioiTinh" style="width:100%;" required>
+            <option value="">-- Chọn giới tính --</option>
+            <option value="Nam">Nam</option>
+            <option value="Nữ">Nữ</option>
+        </select><br><br>
 
-            <tr>
-                <td><b>Chức vụ:</b></td>
-                <td>
-                    <select name="chucVu">
-                        <option value="">-- Chọn chức vụ --</option>
-                        <option value="Quản lý">Quản lý</option>
-                        <option value="Xưởng trưởng">Xưởng trưởng</option>
-                        <option value="Nhân viên kho">Nhân viên kho</option>
-                        <option value="QC">QC</option>
-                        <option value="Kỹ thuật">Kỹ thuật</option>
-                        <option value="Công nhân">Công nhân</option>
-                    </select>
-                </td>
-            </tr>
+        <label><b>Ngày sinh:</b></label><br>
+        <input type="date" name="ngaySinh" style="width:100%;"><br><br>
 
-            <tr>
-                <td><b>Lương (VNĐ):</b></td>
-                <td><input type="number" name="luong" min="0" placeholder="Nhập lương cơ bản"></td>
-            </tr>
+        <label><b>Địa chỉ:</b></label><br>
+        <input type="text" name="diaChi" placeholder="Nhập địa chỉ" style="width:100%;"><br><br>
 
-            <tr>
-                <td><b>Trạng thái:</b></td>
-                <td>
-                    <select name="trangThai">
-                        <option value="HoatDong" selected>Đang làm</option>
-                        <option value="Ngung">Đã nghỉ</option>
-                    </select>
-                </td>
-            </tr>
-        </table>
+        <label><b>Email:</b></label><br>
+        <input type="email" name="email" placeholder="example@gmail.com" style="width:100%;"><br><br>
 
-        <br>
-        <input type="submit" value="💾 Lưu nhân viên" 
-               style="background:#27ae60; color:white; padding:6px 12px; border:none; border-radius:4px; cursor:pointer;">
+        <label><b>Số điện thoại:</b></label><br>
+        <input type="text" name="soDienThoai" placeholder="VD: 0912345678" style="width:100%;"><br><br>
+
+        <label><b>Bộ phận:</b></label><br>
+        <select name="maBoPhan" style="width:100%;" required>
+            <option value="">-- Chọn bộ phận --</option>
+            <option value="BP001">Cắt May</option>
+            <option value="BP002">Hoàn Thiện</option>
+            <option value="BP003">Kho</option>
+            <option value="BP004">Kiểm Định</option>
+            <option value="BP005">Kỹ Thuật</option>
+        </select><br><br>
+
+        <label><b>Vai trò:</b></label><br>
+        <select name="vaiTro" style="width:100%;" required>
+            <option value="">-- Chọn vai trò --</option>
+            <option value="QuanLy">Quản lý</option>
+            <option value="XuongTruong">Xưởng trưởng</option>
+            <option value="NhanVienKho">Nhân viên kho</option>
+            <option value="QC">QC</option>
+            <option value="KyThuat">Kỹ thuật</option>
+            <option value="CongNhan">Công nhân</option>
+        </select><br><br>
+
+    
+        <label><b>Trạng thái:</b></label><br>
+        <select name="trangThai" style="width:100%;">
+            <option value="HoatDong" selected>Hoạt động</option>
+            <option value="Ngung">Ngừng</option>
+        </select><br><br>
+
+        <button type="submit"
+                style="background:#27ae60;color:white;padding:8px 14px;border:none;border-radius:5px;cursor:pointer;">
+            💾 Lưu người dùng
+        </button>
+
         <a href="index.php?controller=nhanvien&action=index" 
-           style="margin-left:10px; text-decoration:none; color:#555;">⬅ Quay lại</a>
+           style="margin-left:10px;text-decoration:none;background:#ccc;padding:8px 14px;border-radius:5px;color:black;">
+           ⬅ Quay lại
+        </a>
     </form>
 </div>
