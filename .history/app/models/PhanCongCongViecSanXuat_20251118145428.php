@@ -1,4 +1,4 @@
-<?php declare(strict_types=1); 
+<?php
 // Model: PhanCongCongViecSanXuat.php — PHP 5.x
 
 class PhanCongCongViecSanXuat {
@@ -122,22 +122,6 @@ class PhanCongCongViecSanXuat {
             return $rows[0]['lastDay'];
         }
         return '';
-    }
-
-        public function layDanhSachBoPhan() {
-        $tbl = $this->pickTable(array('bophan','BoPhan','bo_phan'));
-        if ($tbl==='') return array();
-
-        $rows = $this->db->query("SELECT * FROM {$tbl} ORDER BY maBoPhan ASC");
-        $out = array();
-        foreach ($rows as $r) {
-            $out[] = array(
-                'maBoPhan' => isset($r['maBoPhan']) ? $r['maBoPhan'] : '',
-                'tenBoPhan'=> isset($r['tenBoPhan']) ? $r['tenBoPhan'] : '',
-                'maXuong'  => isset($r['maXuong']) ? $r['maXuong'] : ''
-            );
-        }
-        return $out;
     }
 
     /* --------- 5) Lịch làm theo khoảng ngày (expand từng ngày) --------- */

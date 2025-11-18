@@ -1,4 +1,4 @@
-<?php declare(strict_types=1); 
+<?php
 // Sinh tên đăng nhập ngẫu nhiên: ND + số từ 100 đến 999
 $randomNum = rand(100, 999);
 $defaultTenDangNhap = 'ND' . $randomNum;
@@ -10,8 +10,7 @@ $boPhanXuong = array(
     'BP002' => 'May da giày',
     'BP003' => 'Dán da giày',
     'BP004' => 'Đóng đế giày',
-    'BP005' => 'Hoàn thiện',
-    'BP006' => 'Kho'
+    'BP005' => 'Hoàn thiện'
 );
 ?>
 

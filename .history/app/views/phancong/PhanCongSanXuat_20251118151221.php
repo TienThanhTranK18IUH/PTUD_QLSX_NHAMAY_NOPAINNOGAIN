@@ -1,19 +1,6 @@
 <?php declare(strict_types=1); 
 // View: PhanCongSanXuat.php — không BOM/ khoảng trắng trước thẻ PHP
 ?>
-
-<?php
-// Hiển thị thông báo sau khi save
-if (isset($_GET['msg'])) {
-    $msg = $_GET['msg'];
-    if ($msg === 'LuuThanhCong') {
-        echo '<div class="alert alert-success">Lưu phân công thành công!</div>';
-    } elseif ($msg === 'LuuThatBai') {
-        echo '<div class="alert alert-danger">Lưu phân công thất bại!</div>';
-    }
-}
-?>
-
 <div class="content-wrapper">
   <div class="page-header">
     <h2><i class="fa fa-tasks"></i> PHÂN CÔNG SẢN XUẤT</h2>

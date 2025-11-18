@@ -16,7 +16,7 @@ class PhanCongCongViecSanXuatController {
         $quanLy      = $this->model->layQuanLyHoatDong(); // 👈 tự lấy người có vai trò QuanLy
         $keHoachList = $this->model->layDanhSachKeHoach();
         $caList      = $this->model->layDanhSachCa();
-        $bophanList = $this->model->layDanhSachBoPhan();
+
         if ($quanLy === null) {
             $error = "Không tìm thấy người dùng có vai trò 'QuanLy' đang hoạt động!";
         }

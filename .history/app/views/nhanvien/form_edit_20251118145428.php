@@ -1,4 +1,3 @@
-<?php declare(strict_types=1); ?>
 <div class="content">
     <h2>✏️ Chỉnh sửa nhân viên</h2>
 
@@ -76,8 +75,7 @@
                             'BP002' => 'May da giày',
                             'BP003' => 'Dán da giày',
                             'BP004' => 'Đóng đế giày',
-                            'BP005' => 'Hoàn thiện',
-                            'BP006' => 'Kho'
+                            'BP005' => 'Hoàn thiện'
                         );
                         foreach ($boPhanXuong as $maBP => $tenXuong) {
                             $selected = ($nhanvien['maBoPhan'] == $maBP) ? 'selected' : '';

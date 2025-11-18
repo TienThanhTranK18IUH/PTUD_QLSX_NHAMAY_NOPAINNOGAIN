@@ -1,19 +1,6 @@
 <?php declare(strict_types=1); 
 // View: PhanCongSanXuat.php — không BOM/ khoảng trắng trước thẻ PHP
 ?>
-
-<?php
-// Hiển thị thông báo sau khi save
-if (isset($_GET['msg'])) {
-    $msg = $_GET['msg'];
-    if ($msg === 'LuuThanhCong') {
-        echo '<div class="alert alert-success">Lưu phân công thành công!</div>';
-    } elseif ($msg === 'LuuThatBai') {
-        echo '<div class="alert alert-danger">Lưu phân công thất bại!</div>';
-    }
-}
-?>
-
 <div class="content-wrapper">
   <div class="page-header">
     <h2><i class="fa fa-tasks"></i> PHÂN CÔNG SẢN XUẤT</h2>
@@ -144,30 +131,12 @@ function capNhatThongTinKeHoach() {
   var option = select.options[select.selectedIndex] || null;
   if (!option) return;
 
-  var maXuong = option.value || '';
-  document.getElementById('maXuong').value     = maXuong;
+  document.getElementById('maXuong').value     = option.value || '';
   document.getElementById('soLuong').value     = option.getAttribute('data-tongsoluong') || 0;
   document.getElementById('ngayBatDau').value  = option.getAttribute('data-batdau') || '';
   document.getElementById('ngayKetThuc').value = option.getAttribute('data-ketthuc') || '';
-
-  // Lọc công việc theo maXuong
-  var moTaSelect = document.getElementById('moTaCongViec');
-  for (var i = 0; i < moTaSelect.options.length; i++) {
-    var opt = moTaSelect.options[i];
-    if (i === 0) { // giữ option "-- Chọn ..."
-      opt.style.display = '';
-      continue;
-    }
-    if (opt.getAttribute('data-maxuong') === maXuong) {
-      opt.style.display = '';
-    } else {
-      opt.style.display = 'none';
-    }
-  }
-  moTaSelect.value = ''; // reset chọn
 }
 </script>
-
 
 <style>
   .content-wrapper {padding:30px;background:#f8f9fa;border-radius:8px;}
