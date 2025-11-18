@@ -25,6 +25,11 @@ class PhanCongCongViecSanXuatController {
     }
 
     public function save() {
+        // If accessed via GET, show index (avoid calling header() after layout output)
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return $this->index();
+        }
+
         $maNguoiDung  = isset($_POST['maNguoiDung']) ? $_POST['maNguoiDung'] : '';
         $maCa         = isset($_POST['maCa']) ? $_POST['maCa'] : '';
         $maXuong      = isset($_POST['maXuong']) ? $_POST['maXuong'] : '';
@@ -37,14 +42,13 @@ class PhanCongCongViecSanXuatController {
             $maNguoiDung, $maCa, $maXuong, $moTaCongViec, $soLuong, $ngayBatDau, $ngayKetThuc
         );
 
-        if ($ok) $success = "✅ Lưu phân công thành công!";
-        else $error = "❌ Lỗi khi lưu dữ liệu!";
-
-        $quanLy      = $this->model->layQuanLyHoatDong();
-        $keHoachList = $this->model->layDanhSachKeHoach();
-        $caList      = $this->model->layDanhSachCa();
-
-        include dirname(__FILE__) . '/../views/phancong/PhanCongSanXuat.php';
+        // Use PRG: redirect to index so the normal layout (header/sidebar/footer)
+        // is rendered on the follow-up GET request. POST is processed by the
+        // front controller before loading layouts, so server-side redirect
+        // here is safe and avoids missing sidebar.
+        $msg = $ok ? 'LuuThanhCong' : 'LuuThatBai';
+        header('Location: index.php?controller=PhanCongCongViecSanXuat&action=index&msg=' . urlencode($msg));
+        exit;
     }
 }
 ?>
