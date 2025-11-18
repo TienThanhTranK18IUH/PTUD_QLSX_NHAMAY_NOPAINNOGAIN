@@ -9,15 +9,18 @@ class ThongKeController {
     }
 
     public function index(){
-        // Lấy ngày từ GET hoặc mặc định
-        $from = isset($_GET['from']) ? $_GET['from'] : date('Y-m-01');
-        $to   = isset($_GET['to']) ? $_GET['to'] : date('Y-m-d');
+    $from = isset($_GET['from']) ? $_GET['from'] : date('Y-m-01');
+    $to   = isset($_GET['to']) ? $_GET['to'] : date('Y-m-d');
 
-        $phieuQC = $this->model->getPhieuQC($from, $to);
-        $chartTP = $this->model->getChartTP($from, $to);
-        $chartPie= $this->model->getChartPie($from, $to);
+    $phieuQC = $this->model->getPhieuQC($from, $to);
+    $chartTP = $this->model->getChartTP($from, $to);
+    $chartPie= $this->model->getChartPie($from, $to);
+    $chartDonHang = $this->model->getDonHangTheoNgay($from, $to);
 
-        require_once dirname(__FILE__) . '/../views/thongke/index.php';
-    }
+    // Lấy dữ liệu đơn hàng
+    $donHangTheoNgay = $this->model->getDonHangTheoNgay($from, $to);
+
+    require_once dirname(__FILE__) . '/../views/thongke/index.php';
+}
 }
 ?>

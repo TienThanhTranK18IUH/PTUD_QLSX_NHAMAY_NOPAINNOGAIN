@@ -17,5 +17,6 @@ $routes = array(
         'controller' => 'KeHoachController',
         'action' => 'lapKeHoach'
     )
+    
 );
 ?>

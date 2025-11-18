@@ -30,5 +30,15 @@ class Xuong {
         $result = $stmt->get_result();
         return $result->fetch_assoc();
     }
+     public function getSanLuongTheoXuong() {
+        $sql = "SELECT 
+                    x.tenXuong,
+                    SUM(kh.tongSoLuong) AS TongSoLuongKeHoach,
+                    SUM(kh.ghiNhanSanXuat) AS TongSanLuongDaLam
+                FROM kehoachsanxuat kh
+                JOIN xuong x ON kh.maXuong = x.maXuong
+                GROUP BY x.maXuong, x.tenXuong";
+        return $this->db->query($sql);
+    }
 }
 ?>
