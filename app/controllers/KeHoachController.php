@@ -117,7 +117,9 @@ exit();
         if ($this->model->createPlan($data)) {
             // ✅ Cập nhật trạng thái đơn hàng
             $this->model->updateOrderStatus($data['maDonHang'], 'Đã lập kế hoạch');
-            $success = "Lập kế hoạch thành công!";
+            // Sau khi POST thành công, chuyển hướng (PRG) về trang danh sách
+            header("Location: index.php?controller=kehoach&action=index");
+            exit();
         } else {
             $errors[] = "Không thể lưu kế hoạch.";
         }
