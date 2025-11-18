@@ -39,6 +39,6 @@
   }
 </style>
 <div class="dashboard-container">
-<img src="/PTUD_QLSX_NHAMAY_NOPAINNOGAIN1/public/img/logo.jpg" alt="Logo Nhà máy" class="dashboard-image">
+<img src="/PTUD_QLSX_NHAMAY_NOPAINNOGAIN/public/img/logo.jpg" alt="Logo Nhà máy" class="dashboard-image">
 
 </div>

@@ -1,83 +1,93 @@
-<?php declare(strict_types=1); 
+<?php
 // ================================
-// index.php — Front Controller
+// index.php — Front Controller (PHP 5.x)
 // ================================
 
-// START OUTPUT BUFFERING FIRST - BEFORE SESSION AND INCLUDES
+// 🟢 BẬT OUTPUT BUFFERING TRƯỚC TIÊN
 if (!ob_get_level()) {
     ob_start();
 }
 
-// Bắt đầu session
-session_start();
+// 🟢 Bắt đầu session
+if (session_id() === '') {
+    session_start();
+}
 
-// Gọi file cấu hình
+// 🟢 Gọi file cấu hình
 require_once 'config/config.php';
 require_once 'config/routes.php';
 require_once 'app/models/database.php';
 
-// Check if it's a POST request to a handler that needs to send headers
+// 🟢 Lấy controller/action (PHP 5.x không dùng ??)
 $controllerName = isset($_GET['controller']) ? $_GET['controller'] : 'dashboard';
 $action         = isset($_GET['action']) ? $_GET['action'] : 'index';
 
-// For POST requests, load controller and execute BEFORE loading layouts
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $controllerName === 'phieuNhapXuat') {
+// ================================
+// XỬ LÝ POST TRƯỚC – KHÔNG LOAD LAYOUT
+// ================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $controllerFile = "app/controllers/{$controllerName}Controller.php";
+
     if (file_exists($controllerFile)) {
         require_once $controllerFile;
         $controllerClass = ucfirst($controllerName) . 'Controller';
+
         if (class_exists($controllerClass)) {
+
             $db = new Database();
-            var_dump($db->conn);
-            exit;
-            
             $controllerObj = new $controllerClass($db);
+
             if (method_exists($controllerObj, $action)) {
-                $controllerObj->$action();  // This will exit() if successful
+                // POST TRẢ RA DIRECT (REDIRECT, JSON, EXIT...)
+                $controllerObj->$action();
+                exit; // bắt buộc để redirect không lỗi header
             }
         }
     }
 }
 
-// Load layout (only for non-POST or non-redirected requests)
+// ================================
+// LOAD LAYOUT (chỉ khi GET hoặc POST không exit)
+// ================================
 include 'app/views/layouts/header.php';
 include 'app/views/layouts/sidebar.php';
 
-// Tạo kết nối DB
+// 🟢 Kết nối Database
 $db = new Database();
 
 // ================================
-// Điều hướng controller/action
+// ĐIỀU HƯỚNG CONTROLLER GET
 // ================================
-
-// Xác định đường dẫn controller
 $controllerFile = "app/controllers/{$controllerName}Controller.php";
 
 if (file_exists($controllerFile)) {
+
     require_once $controllerFile;
     $controllerClass = ucfirst($controllerName) . 'Controller';
 
-    // ✅ KIỂM TRA CLASS CÓ TỒN TẠI KHÔNG
     if (class_exists($controllerClass)) {
+
         $controllerObj = new $controllerClass($db);
 
         if (method_exists($controllerObj, $action)) {
             $controllerObj->$action();
-            
         } else {
             echo "<div class='content'><h3>❌ Action không tồn tại!</h3></div>";
         }
+
     } else {
         echo "<div class='content'><h3>❌ Class controller không tồn tại!</h3></div>";
     }
+
 } else {
     echo "<div class='content'><h3>❌ Controller file không tồn tại!</h3></div>";
 }
 
-// Footer
+// FOOTER
 include 'app/views/layouts/footer.php';
 
-// FLUSH OUTPUT BUFFER AT THE END
+// 🟢 Kết thúc buffer, xuất HTML
 if (ob_get_level()) {
     ob_end_flush();
 }

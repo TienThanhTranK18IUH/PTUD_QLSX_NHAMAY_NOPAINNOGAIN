@@ -5,6 +5,15 @@ class NhanVien {
     private $db;
     private $conn;
 
+    // Map bộ phận => tên xưởng
+    private $boPhanXuong = array(
+        'BP001' => 'Xưởng Cắt May',
+        'BP002' => 'Xưởng Hoàn Thiện',
+        'BP003' => 'Xưởng Kho',
+        'BP004' => 'Xưởng Kiểm Định',
+        'BP005' => 'Xưởng Kỹ Thuật'
+    );
+
     public function __construct() {
         $this->db = new Database();
         $this->conn = $this->db->conn;
@@ -12,7 +21,7 @@ class NhanVien {
 
     // ===== Lấy tất cả nhân viên đang hoạt động =====
     public function getAll() {
-        $sql = "SELECT maNguoiDung, hoTen, gioiTinh, ngaySinh, diaChi, soDienThoai, email, vaiTro,tenXuong, trangThai 
+        $sql = "SELECT maNguoiDung, hoTen, gioiTinh, ngaySinh, diaChi, soDienThoai, email, vaiTro, tenXuong, trangThai 
                 FROM nguoidung 
                 WHERE trangThai = 'HoatDong' 
                 ORDER BY maNguoiDung ASC";
@@ -40,13 +49,16 @@ class NhanVien {
             $data[$key] = $this->conn->real_escape_string($value);
         }
 
-        // Nếu người dùng không nhập mã, tự động tạo NDxxx
+        // Nếu chưa có mã người dùng
         if (empty($data['maNguoiDung'])) {
             $result = $this->conn->query("SELECT MAX(CAST(SUBSTRING(maNguoiDung,3) AS UNSIGNED)) AS maxID FROM nguoidung");
             $row = $result->fetch_assoc();
             $nextId = $row['maxID'] + 1;
             $data['maNguoiDung'] = 'ND' . str_pad($nextId, 3, '0', STR_PAD_LEFT);
         }
+
+        // Lấy tên xưởng theo bộ phận
+        $data['tenXuong'] = isset($this->boPhanXuong[$data['maBoPhan']]) ? $this->boPhanXuong[$data['maBoPhan']] : '';
 
         $sql = "INSERT INTO nguoidung (
                     maNguoiDung, tenDangNhap, matKhau, hoTen, gioiTinh, ngaySinh,
@@ -77,6 +89,9 @@ class NhanVien {
             $data[$key] = $this->conn->real_escape_string($value);
         }
 
+        // Lấy tên xưởng theo bộ phận
+        $data['tenXuong'] = isset($this->boPhanXuong[$data['maBoPhan']]) ? $this->boPhanXuong[$data['maBoPhan']] : '';
+
         $sql = "UPDATE nguoidung SET 
                     tenDangNhap='{$data['tenDangNhap']}',
                     hoTen='{$data['hoTen']}',
@@ -87,6 +102,7 @@ class NhanVien {
                     email='{$data['email']}',
                     vaiTro='{$data['vaiTro']}',
                     tenXuong='{$data['tenXuong']}',
+                    maBoPhan='{$data['maBoPhan']}',
                     trangThai='{$data['trangThai']}'
                 WHERE maNguoiDung='$id'";
 
@@ -100,18 +116,14 @@ class NhanVien {
         return $result;
     }
 
-    // ===== Xóa mềm (đổi trạng thái sang 'Ngung') =====
+    // ===== Xóa mềm =====
     public function delete($id) {
         $id = $this->conn->real_escape_string($id);
         $sql = "UPDATE nguoidung SET trangThai='Ngung' WHERE maNguoiDung='$id'";
         return $this->conn->query($sql);
     }
 
-    /* =======================
-       ✅ BỔ SUNG CHO MODULE CHẤM CÔNG & LƯƠNG
-       ======================= */
-
-    // --- Lấy 1 nhân viên theo mã (phục vụ phần lương, chấm công)
+    // ===== Lấy nhân viên theo mã =====
     public function findById($maNguoiDung) {
         $maNguoiDung = $this->conn->real_escape_string($maNguoiDung);
         $sql = "SELECT * FROM nguoidung WHERE maNguoiDung = '$maNguoiDung' LIMIT 1";
@@ -119,7 +131,7 @@ class NhanVien {
         return ($result && $result->num_rows > 0) ? $result->fetch_assoc() : null;
     }
 
-    // --- Liệt kê công nhân theo xưởng (dành cho xưởng trưởng xem danh sách)
+    // ===== Liệt kê công nhân theo xưởng =====
     public function listByXuong($tenXuong) {
         $tenXuong = $this->conn->real_escape_string($tenXuong);
         $sql = "SELECT maNguoiDung, hoTen, vaiTro, tenXuong, trangThai
@@ -135,14 +147,17 @@ class NhanVien {
         }
         return $data;
     }
-    public function getMaXuongTheoTen($tenXuong){
-    $ten = $this->conn->real_escape_string($tenXuong);
-    $sql = "SELECT maXuong FROM xuong WHERE tenXuong='$ten' LIMIT 1";
-    $res = $this->conn->query($sql);
-    if($res && $res->num_rows>0){ $r=$res->fetch_assoc(); return $r['maXuong']; }
-    return '';
-}
 
-    
+    // ===== Lấy mã xưởng theo tên xưởng =====
+    public function getMaXuongTheoTen($tenXuong){
+        $ten = $this->conn->real_escape_string($tenXuong);
+        $sql = "SELECT maXuong FROM xuong WHERE tenXuong='$ten' LIMIT 1";
+        $res = $this->conn->query($sql);
+        if($res && $res->num_rows>0){ 
+            $r = $res->fetch_assoc(); 
+            return $r['maXuong']; 
+        }
+        return '';
+    }
 }
 ?>

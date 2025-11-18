@@ -1,3 +1,19 @@
+<?php
+// Sinh tên đăng nhập ngẫu nhiên: ND + số từ 100 đến 999
+$randomNum = rand(100, 999);
+$defaultTenDangNhap = 'ND' . $randomNum;
+$defaultMatKhau = '12345';
+
+// Mảng bộ phận và tên xưởng tương ứng
+$boPhanXuong = array(
+    'BP001' => 'Cắt da giày',
+    'BP002' => 'May da giày',
+    'BP003' => 'Dán da giày',
+    'BP004' => 'Đóng đế giày',
+    'BP005' => 'Hoàn thiện'
+);
+?>
+
 <div class="content">
     <h2>➕ Thêm người dùng mới</h2>
 
@@ -13,10 +29,12 @@
           style="max-width:650px; background:#fafafa; padding:20px; border-radius:8px; box-shadow:0 0 6px rgba(0,0,0,0.1);">
 
         <label><b>Tên đăng nhập:</b></label><br>
-        <input type="text" name="tenDangNhap" placeholder="Tên đăng nhập" required style="width:100%;"><br><br>
+        <input type="text" name="tenDangNhap" value="<?php echo $defaultTenDangNhap; ?>" readonly
+               style="width:100%; background:#eee; cursor:not-allowed;"><br><br>
 
         <label><b>Mật khẩu:</b></label><br>
-        <input type="password" name="matKhau" placeholder="Mật khẩu" required style="width:100%;"><br><br>
+        <input type="text" value="<?php echo $defaultMatKhau; ?>" readonly
+               style="width:100%; background:#eee; cursor:not-allowed;"><br><br>
 
         <label><b>Họ tên:</b></label><br>
         <input type="text" name="hoTen" placeholder="Nhập họ tên" required style="width:100%;"><br><br>
@@ -43,11 +61,11 @@
         <label><b>Bộ phận:</b></label><br>
         <select name="maBoPhan" style="width:100%;" required>
             <option value="">-- Chọn bộ phận --</option>
-            <option value="BP001">Cắt May</option>
-            <option value="BP002">Hoàn Thiện</option>
-            <option value="BP003">Kho</option>
-            <option value="BP004">Kiểm Định</option>
-            <option value="BP005">Kỹ Thuật</option>
+            <?php
+            foreach ($boPhanXuong as $maBP => $tenXuong) {
+                echo '<option value="' . $maBP . '">' . $tenXuong . '</option>';
+            }
+            ?>
         </select><br><br>
 
         <label><b>Vai trò:</b></label><br>
@@ -61,7 +79,6 @@
             <option value="CongNhan">Công nhân</option>
         </select><br><br>
 
-    
         <label><b>Trạng thái:</b></label><br>
         <select name="trangThai" style="width:100%;">
             <option value="HoatDong" selected>Hoạt động</option>
@@ -77,5 +94,9 @@
            style="margin-left:10px;text-decoration:none;background:#ccc;padding:8px 14px;border-radius:5px;color:black;">
            ⬅ Quay lại
         </a>
+
+        <!-- Truyền tenDangNhap và matKhau thật sự vào POST -->
+        <input type="hidden" name="tenDangNhap" value="<?php echo $defaultTenDangNhap; ?>">
+        <input type="hidden" name="matKhau" value="<?php echo $defaultMatKhau; ?>">
     </form>
 </div>

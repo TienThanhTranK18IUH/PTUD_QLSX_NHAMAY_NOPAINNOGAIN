@@ -1,63 +1,94 @@
 <?php
 require_once dirname(__FILE__) . '/../models/NhanVien.php';
 
-class nhanVienController {
+class NhanVienController {
     private $model;
+
+    // Map bộ phận => tên xưởng
+    private $boPhanXuong = array(
+        'BP001' => 'Xưởng Cắt May',
+        'BP002' => 'Xưởng Hoàn Thiện',
+        'BP003' => 'Xưởng Kho',
+        'BP004' => 'Xưởng Kiểm Định',
+        'BP005' => 'Xưởng Kỹ Thuật'
+    );
 
     public function __construct() {
         $this->model = new NhanVien();
     }
 
-    // ===== Danh sách nhân viên =====
+    // ==================== DANH SÁCH NHÂN VIÊN ====================
     public function index() {
         $nhanviens = $this->model->getAll();
         include dirname(__FILE__) . '/../views/nhanvien/index.php';
     }
 
-    // ===== Thêm nhân viên =====
+    // ==================== THÊM NHÂN VIÊN ====================
     public function add() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if ($this->model->insert($_POST)) {
-                header("Location: index.php?controller=nhanvien&action=index&msg=added");
-            } else {
-                echo "<div class='content'><h3>❌ Lỗi thêm nhân viên!</h3></div>";
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Tự động thêm tên xưởng dựa trên bộ phận
+            if (!empty($_POST['maBoPhan'])) {
+                $maBoPhan = $_POST['maBoPhan'];
+                $_POST['tenXuong'] = isset($this->boPhanXuong[$maBoPhan]) ? $this->boPhanXuong[$maBoPhan] : '';
             }
-            exit();
+
+            $result = $this->model->insert($_POST);
+
+            if ($result) {
+                header("Location: index.php?controller=nhanvien&action=index&msg=added");
+                exit();
+            }
+
+            echo "<div class='content'><h3>❌ Lỗi thêm nhân viên!</h3></div>";
         }
+
         include dirname(__FILE__) . '/../views/nhanvien/form_add.php';
     }
 
-    // ===== Sửa nhân viên =====
+    // ==================== SỬA NHÂN VIÊN ====================
     public function edit() {
-        if (!isset($_GET['id'])) {
+        if (empty($_GET['id'])) {
             echo "<div class='content'><h3>❌ Thiếu mã nhân viên!</h3></div>";
             return;
         }
+
         $id = $_GET['id'];
         $nhanvien = $this->model->getById($id);
+
         if (!$nhanvien) {
             echo "<div class='content'><h3>❌ Không tìm thấy nhân viên!</h3></div>";
             return;
         }
 
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if ($this->model->update($id, $_POST)) {
-                header("Location: index.php?controller=nhanvien&action=index&msg=updated");
-            } else {
-                echo "<div class='content'><h3>❌ Lỗi cập nhật!</h3></div>";
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Tự động thêm tên xưởng dựa trên bộ phận
+            if (!empty($_POST['maBoPhan'])) {
+                $maBoPhan = $_POST['maBoPhan'];
+                $_POST['tenXuong'] = isset($this->boPhanXuong[$maBoPhan]) ? $this->boPhanXuong[$maBoPhan] : '';
             }
-            exit();
+
+            $result = $this->model->update($id, $_POST);
+
+            if ($result) {
+                header("Location: index.php?controller=nhanvien&action=index&msg=updated");
+                exit();
+            }
+
+            echo "<div class='content'><h3>❌ Lỗi cập nhật nhân viên!</h3></div>";
         }
 
         include dirname(__FILE__) . '/../views/nhanvien/form_edit.php';
     }
 
-    // ===== Xóa mềm nhân viên =====
+    // ==================== XOÁ MỀM NHÂN VIÊN ====================
     public function delete() {
-        if (isset($_GET['id'])) {
+        if (!empty($_GET['id'])) {
             $this->model->delete($_GET['id']);
         }
-        header("Location: index.php?controller=nhanvien&action=index&msg=deleted");
+
+        $url = 'index.php?controller=nhanvien&action=index&msg=deleted';
+        echo "<script>window.location.replace('" . htmlspecialchars($url, ENT_QUOTES) . "');</script>";
+        echo "<noscript><meta http-equiv=\"refresh\" content=\"0;url={$url}\"></noscript>";
         exit();
     }
 }

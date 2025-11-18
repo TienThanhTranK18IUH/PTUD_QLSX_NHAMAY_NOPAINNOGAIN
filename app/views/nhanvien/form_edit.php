@@ -50,12 +50,40 @@
 
             <tr>
                 <td><b>Vai trò (chức vụ):</b></td>
-                <td><input type="text" name="vaiTro" value="<?php echo htmlspecialchars($nhanvien['vaiTro']); ?>"></td>
+                <td>
+                    <select name="vaiTro" required>
+                        <?php
+                        $roles = array('QuanLy' => 'Quản lý', 'XuongTruong' => 'Xưởng trưởng', 'NhanVienKho' => 'Nhân viên kho', 'QC' => 'QC', 'KyThuat' => 'Kỹ thuật', 'CongNhan' => 'Công nhân');
+                        foreach ($roles as $key => $label) {
+                            $selected = ($nhanvien['vaiTro'] == $key) ? 'selected' : '';
+                            echo '<option value="' . $key . '" ' . $selected . '>' . $label . '</option>';
+                        }
+                        ?>
+                    </select>
+                </td>
             </tr>
 
             <tr>
-                <td><b>Xưởng:</b></td>
-                <td><input type="text" name="tenXuong" value="<?php echo htmlspecialchars($nhanvien['tenXuong']); ?>"></td>
+                <td><b>Bộ phận:</b></td>
+                <td>
+                    <select name="maBoPhan" id="maBoPhan" style="width:100%;" required onchange="updateXuong()">
+                        <option value="">-- Chọn bộ phận --</option>
+                        <?php
+                        // Mảng bộ phận và tên xưởng tương ứng
+                        $boPhanXuong = array(
+                            'BP001' => 'Cắt da giày',
+                            'BP002' => 'May da giày',
+                            'BP003' => 'Dán da giày',
+                            'BP004' => 'Đóng đế giày',
+                            'BP005' => 'Hoàn thiện'
+                        );
+                        foreach ($boPhanXuong as $maBP => $tenXuong) {
+                            $selected = ($nhanvien['maBoPhan'] == $maBP) ? 'selected' : '';
+                            echo '<option value="' . $maBP . '" ' . $selected . '>' . $tenXuong . '</option>';
+                        }
+                        ?>
+                    </select>
+                </td>
             </tr>
 
             <tr>
@@ -76,3 +104,12 @@
            style="margin-left:10px; text-decoration:none; color:#555;">⬅ Quay lại</a>
     </form>
 </div>
+
+<script>
+// Tự động cập nhật tên xưởng khi chọn bộ phận
+var boPhanXuong = <?php echo json_encode($boPhanXuong); ?>;
+function updateXuong() {
+    var bp = document.getElementById('maBoPhan').value;
+    document.getElementById('tenXuong').value = boPhanXuong[bp] ? boPhanXuong[bp] : '';
+}
+</script>
