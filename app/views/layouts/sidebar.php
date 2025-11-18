@@ -58,7 +58,7 @@ $isSCActive = ($cl==='phieu' && $al==='suachua');
                     📝 Ghi nhận sản xuất
                 </a>
             </li>
-
+        <li><a href="index.php?controller=ghinhanthanhpham"  class="<?php echo nav_active($cl==='ghinhanthanhpham'); ?>">🏭 Ghi nhận thành phẩm</a></li>
             <!-- Kế hoạch sản xuất (submenu) -->
         <li class="has-submenu <?php echo ($cl==='kehoach') ? 'open' : ''; ?>">
           <a href="#">🗂 Kế hoạch sản xuất ▾</a>
@@ -83,9 +83,6 @@ $isSCActive = ($cl==='phieu' && $al==='suachua');
           </li>
           </ul>
         </li>
-            <li><a href="index.php?controller=kho" class="<?php echo nav_active($cl==='kho'); ?>">🏢 Quản lý kho</a>
-            </li>
-
             <li class="has-submenu <?php echo $inPhieuGroup ? 'open' : ''; ?>">
                 <a href="#">📋 Quản lý phiếu ▾</a>
                 <ul class="submenu">
