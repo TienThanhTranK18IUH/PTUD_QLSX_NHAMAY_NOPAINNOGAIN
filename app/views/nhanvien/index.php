@@ -10,6 +10,7 @@
         <thead style="background-color:#f0f0f0; text-align:center;">
             <tr>
                 <th>Mã NV</th>
+                <th>Tên đăng nhập</th>
                 <th>Họ tên</th>
                 <th>Giới tính</th>
                 <th>Ngày sinh</th>
@@ -28,6 +29,7 @@
                 foreach ($nhanviens as $nv) {
                     echo "<tr>";
                     echo "<td align='center'>{$nv['maNguoiDung']}</td>";
+                    echo "<td align='center'>{$nv['tenDangNhap']}</td>";
                     echo "<td>{$nv['hoTen']}</td>";
                     echo "<td align='center'>{$nv['gioiTinh']}</td>";
                     echo "<td align='center'>{$nv['ngaySinh']}</td>";

@@ -21,7 +21,7 @@ class NhanVien {
 
     // ===== Lấy tất cả nhân viên đang hoạt động =====
     public function getAll() {
-        $sql = "SELECT maNguoiDung, hoTen, gioiTinh, ngaySinh, diaChi, soDienThoai, email, vaiTro, tenXuong, trangThai 
+        $sql = "SELECT maNguoiDung, tenDangNhap, hoTen, gioiTinh, ngaySinh, diaChi, soDienThoai, email, vaiTro, tenXuong, trangThai 
                 FROM nguoidung 
                 WHERE trangThai = 'HoatDong' 
                 ORDER BY maNguoiDung ASC";
