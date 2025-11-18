@@ -59,8 +59,30 @@ $isSCActive = ($cl==='phieu' && $al==='suachua');
                 </a>
             </li>
 
-            <li><a href="index.php?controller=keHoach" class="<?php echo nav_active($cl==='kehoach'); ?>">🗂 Kế hoạch
-                    sản xuất</a></li>
+            <!-- Kế hoạch sản xuất (submenu) -->
+        <li class="has-submenu <?php echo ($cl==='kehoach') ? 'open' : ''; ?>">
+          <a href="#">🗂 Kế hoạch sản xuất ▾</a>
+          <ul class="submenu">
+            <li>
+              <a href="index.php?controller=keHoach&action=index"
+                class="<?php echo nav_active($cl==='kehoach' && $al==='index'); ?>">
+                📋 Xem
+              </a>
+            </li>
+            <li>
+              <a href="index.php?controller=keHoach&action=form_edit"
+                class="<?php echo nav_active($cl==='kehoach' && $al==='form_edit'); ?>">
+                ✏️ Cập nhật
+              </a>
+            </li>
+            <li>
+            <a href="index.php?controller=keHoach&action=lapKeHoach"
+              class="<?php echo nav_active($cl==='kehoach' && $al==='lapkehoach'); ?>">
+              🆕 Lập KHSX
+            </a>
+          </li>
+          </ul>
+        </li>
             <li><a href="index.php?controller=kho" class="<?php echo nav_active($cl==='kho'); ?>">🏢 Quản lý kho</a>
             </li>
 
@@ -131,13 +153,13 @@ class="<?php echo nav_active($cl==='phieu' && $al==='index'); ?>">
                 <ul class="submenu">
                     <li>
                         <a href="index.php?controller=PhanCongCongViecSanXuat"
-class="<?php echo nav_active($cl==='phancongcongviecsanxuat' || $c==='PhanCongCongViecSanXuat'); ?>">
+class="<?php echo nav_active($cl==='phancongcongviecsanxuat' || $cl==='PhanCongCongViecSanXuat'); ?>">
                             🧰 Phân công sản xuất
                         </a>
                     </li>
                     <li>
                         <a href="index.php?controller=PhanCongDoiCa"
-                            class="<?php echo nav_active($cl==='phancongdoica' || $c==='PhanCongDoiCa'); ?>">
+                            class="<?php echo nav_active($cl==='phancongdoica' || $cl==='PhanCongDoiCa'); ?>">
                             🔄 Phân công, đổi ca công việc cho công nhân
                         </a>
                     </li>

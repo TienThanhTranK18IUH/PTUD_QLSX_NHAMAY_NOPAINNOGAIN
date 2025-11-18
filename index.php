@@ -25,7 +25,7 @@ $action         = isset($_GET['action']) ? $_GET['action'] : 'index';
 // ================================
 // XỬ LÝ POST TRƯỚC – KHÔNG LOAD LAYOUT
 // ================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) ) {
 
     $controllerFile = "app/controllers/{$controllerName}Controller.php";
 

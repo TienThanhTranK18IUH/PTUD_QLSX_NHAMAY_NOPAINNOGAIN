@@ -42,13 +42,24 @@ class PhieuKTTP {
     }
 
     public function getNextMaPhieu() {
-        $rs = $this->conn->query("SELECT maPhieu FROM phieukiemtrathanhpham ORDER BY maPhieu DESC LIMIT 1");
-        if ($rs && ($row=$rs->fetch_assoc())) {
-            $num = (int)preg_replace('/\D/','', substr($row['maPhieu'], 2));
-            $num++;
-        } else $num = 1;
-        return 'KP'.str_pad($num, 3, '0', STR_PAD_LEFT);
+    $sql = "SELECT maPhieu 
+            FROM phieukiemtrathanhpham 
+            WHERE maPhieu LIKE 'KP%' 
+            ORDER BY CAST(SUBSTRING(maPhieu, 3) AS UNSIGNED) DESC 
+            LIMIT 1";
+
+    $rs = $this->conn->query($sql);
+
+    if ($rs && ($row = $rs->fetch_assoc())) {
+        $num = (int)substr($row['maPhieu'], 2); // chỉ lấy số sau KP
+        $num++;
+    } else {
+        $num = 1;
     }
+
+    return 'KP'.str_pad($num, 3, '0', STR_PAD_LEFT);
+}
+
 
     public function addPhieuKT($data) {
         $cols = $this->getTableColumns('phieukiemtrathanhpham');

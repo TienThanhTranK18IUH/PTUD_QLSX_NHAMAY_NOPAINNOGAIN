@@ -11,7 +11,9 @@ class KeHoachSanXuat {
         }
         mysqli_set_charset($this->conn, 'utf8');
     }
-
+public function getConnection() {
+    return $this->conn;
+}
     // Lấy danh sách tất cả kế hoạch
     public function getAll() {
         $sql = "SELECT 
@@ -42,5 +44,153 @@ class KeHoachSanXuat {
         }
         return $data;
     }
+    // Lấy tất cả xưởng
+public function getAllXuongs() {
+    $result = mysqli_query($this->conn, "SELECT maXuong, tenXuong FROM xuong");
+    $data = array();
+    while ($row = mysqli_fetch_assoc($result)) {
+        $data[] = $row;
+    }
+    return $data;
+}
+
+// Lấy tất cả sản phẩm
+public function getAllSanPhams() {
+    $result = mysqli_query($this->conn, "SELECT maSP, tenSP FROM donhang");
+    $data =array();
+    while ($row = mysqli_fetch_assoc($result)) {
+        $data[] = $row;
+    }
+    return $data;
+}
+
+// Lấy tất cả đơn hàng
+public function getAllDonHangs() {
+    $result = mysqli_query($this->conn, "SELECT maDonHang FROM donhang");
+    $data = array();
+    while ($row = mysqli_fetch_assoc($result)) {
+        $data[] = $row;
+    }
+    return $data;
+}
+public function getAllNguyenLieus() {
+    $nguyenlieus = array();
+    $sql = "SELECT maNguyenLieu, tenNguyenLieu FROM nguyenlieu ORDER BY tenNguyenLieu ASC";
+    $result = mysqli_query($this->conn, $sql);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $nguyenlieus[] = $row;
+        }
+    }
+
+    return $nguyenlieus;
+}
+public function updateKeHoach($maKH, $data) {
+    // Lấy connection
+    $conn = $this->conn;
+
+    // Escape dữ liệu để an toàn
+    $maXuong = mysqli_real_escape_string($conn, $data['maXuong']);
+    $maDonHang = mysqli_real_escape_string($conn, $data['maDonHang']);
+    $ngayBatDau = mysqli_real_escape_string($conn, $data['ngayBatDau']);
+    $ngayKetThuc = mysqli_real_escape_string($conn, $data['ngayKetThuc']);
+    $tongSoLuong = intval($data['tongSoLuong']);
+    $maNguyenLieu = mysqli_real_escape_string($conn, $data['maNguyenLieu']);
+    $tenNguyenLieu = mysqli_real_escape_string($conn, $data['tenNguyenLieu']);
+    $soLuongNguyenLieu = intval($data['soLuongNguyenLieu']);
+    $trangThai = mysqli_real_escape_string($conn, $data['trangThai']);
+    $maKH = mysqli_real_escape_string($conn, $maKH);
+
+    // Tạo câu lệnh UPDATE
+    $sql = "UPDATE kehoachsanxuat SET 
+                maXuong='$maXuong',
+                maDonHang='$maDonHang',
+                ngayBatDau='$ngayBatDau',
+                ngayKetThuc='$ngayKetThuc',
+                tongSoLuong=$tongSoLuong,
+                maNguyenLieu='$maNguyenLieu',
+                tenNguyenLieu='$tenNguyenLieu',
+                soLuongNguyenLieu=$soLuongNguyenLieu,
+                trangThai='$trangThai'
+            WHERE maKeHoach='$maKH'";
+
+    // Thực hiện câu lệnh
+    if (!mysqli_query($conn, $sql)) {
+        die("Lỗi cập nhật kế hoạch: " . mysqli_error($conn));
+    }
+}
+    public function checkDuplicatePlan($data) {
+        $conn = $this->conn;
+        $maDonHang = mysqli_real_escape_string($conn, $data['maDonHang']);
+        $maXuong = mysqli_real_escape_string($conn, $data['maXuong']);
+        $sql = "SELECT * FROM kehoachsanxuat WHERE maDonHang='$maDonHang' AND maXuong='$maXuong'";
+        $result = mysqli_query($conn, $sql);
+        return ($result && mysqli_num_rows($result) > 0);
+    }
+
+// Lấy danh sách đơn hàng chưa lập kế hoạch
+public function getPendingOrders() {
+    $sql = "SELECT * FROM donhang WHERE maDonHang NOT IN (SELECT maDonHang FROM kehoachsanxuat)";
+    $res = mysqli_query($this->conn, $sql);
+    $rows =array();
+    while($row = mysqli_fetch_assoc($res)) $rows[] = $row;
+    return $rows;
+}
+public function generateMaKeHoach() {
+    $conn = $this->conn;
+    $sql = "SELECT maKeHoach FROM kehoachsanxuat ORDER BY maKeHoach DESC LIMIT 1";
+    $result = mysqli_query($conn, $sql);
+    $newID = "KH001";
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $lastID = intval(substr($row['maKeHoach'], 2)) + 1;
+        $newID = "KH" . str_pad($lastID, 3, "0", STR_PAD_LEFT);
+    }
+    return $newID;
+}
+public function createPlan($data) {
+    $conn = $this->conn;
+
+    // --- Sinh mã kế hoạch tự động ---
+    $maKeHoach = $this->generateMaKeHoach();
+
+    $maDonHang   = mysqli_real_escape_string($conn, $data['maDonHang']);
+    $maXuong     = mysqli_real_escape_string($conn, $data['maXuong']);
+    $ngayBatDau  = mysqli_real_escape_string($conn, $data['ngayBatDau']);
+    $ngayKetThuc = mysqli_real_escape_string($conn, $data['ngayKetThuc']);
+    $tongSoLuong = (int)$data['tongSoLuong'];
+    $trangThai   = mysqli_real_escape_string($conn, $data['trangThai']);
+
+    // --- Kiểm tra mảng nguyên liệu ---
+    $maNLs  = $data['maNguyenLieu'];
+    $tenNLs = $data['tenNguyenLieu'];
+    $soLuongNLs = $data['soLuongNguyenLieu'];
+
+    // --- Nếu là mảng, chèn từng nguyên liệu ---
+    for ($i = 0; $i < count($maNLs); $i++) {
+        $maNL  = mysqli_real_escape_string($conn, $maNLs[$i]);
+        $tenNL = mysqli_real_escape_string($conn, $tenNLs[$i]);
+        $soLuongNL = (int)$soLuongNLs[$i];
+
+        $sql = "INSERT INTO kehoachsanxuat (
+                    maKeHoach, maDonHang, maXuong, ngayBatDau, ngayKetThuc,
+                    tongSoLuong, trangThai, maNguyenLieu, tenNguyenLieu, soLuongNguyenLieu
+                ) VALUES (
+                    '$maKeHoach', '$maDonHang', '$maXuong', '$ngayBatDau', '$ngayKetThuc',
+                    $tongSoLuong, '$trangThai', '$maNL', '$tenNL', $soLuongNL
+                )";
+        mysqli_query($conn, $sql);
+    }
+
+    return true;
+}
+
+public function updateOrderStatus($maDonHang, $newStatus) {
+    $conn = $this->conn;
+    $sql = "UPDATE donhang SET tinhTrang = '$newStatus' WHERE maDonHang = '$maDonHang'";
+    return mysqli_query($conn, $sql);
+}
 }
 ?>
