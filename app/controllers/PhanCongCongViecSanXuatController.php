@@ -3,6 +3,7 @@
 
 require_once dirname(__FILE__) . '/../models/database.php';
 require_once dirname(__FILE__) . '/../models/PhanCongCongViecSanXuat.php';
+require_once dirname(__FILE__) . '/../helpers/auth.php';
 
 class PhanCongCongViecSanXuatController {
     private $model;
@@ -13,6 +14,7 @@ class PhanCongCongViecSanXuatController {
     }
 
     public function index() {
+        requireRole(array('manager','leader'));
         $quanLy      = $this->model->layQuanLyHoatDong(); // 👈 tự lấy người có vai trò QuanLy
         $keHoachList = $this->model->layDanhSachKeHoach();
         $caList      = $this->model->layDanhSachCa();
@@ -25,6 +27,7 @@ class PhanCongCongViecSanXuatController {
     }
 
     public function save() {
+        requireRole(array('manager','leader'));
         // If accessed via GET, show index (avoid calling header() after layout output)
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             return $this->index();

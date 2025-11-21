@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__FILE__) .'/../models/thongKe.php';
+require_once dirname(__FILE__) . '/../helpers/auth.php';
 
 class ThongKeController {
     private $model;
@@ -9,6 +10,7 @@ class ThongKeController {
     }
 
     public function index(){
+        requireRole(array('manager','leader'));
     $from = isset($_GET['from']) ? $_GET['from'] : date('Y-m-01');
     $to   = isset($_GET['to']) ? $_GET['to'] : date('Y-m-d');
 

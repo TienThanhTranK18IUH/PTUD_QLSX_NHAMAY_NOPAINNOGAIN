@@ -7,6 +7,9 @@ class BaoTriController {
     private $model;
 
     public function __construct() {
+        require_once dirname(__FILE__) . '/../helpers/auth.php';
+        // Allow managers, xưởng trưởng (leader) and technicians to access maintenance records
+        requireRole(array('manager','leader','technician'));
         $this->model = new PhieuGhiNhanSuaChua();
     }
 

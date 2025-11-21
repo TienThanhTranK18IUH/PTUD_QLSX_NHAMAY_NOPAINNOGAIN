@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__FILE__) . '/../helpers/auth.php';
+
 class GhiNhanThanhPhamController {
     private $db;
     public function __construct($db){
@@ -6,6 +8,7 @@ class GhiNhanThanhPhamController {
     }
 
     public function index(){
+        requireRole(array('manager','leader'));
         // Lấy danh sách kế hoạch sản xuất
         $keHoachList = $this->db->query("SELECT maKeHoach, maXuong FROM kehoachsanxuat");
         // Sinh maTP tự động
@@ -15,17 +18,19 @@ class GhiNhanThanhPhamController {
         include 'app/views/thanhpham/ghinhanthanhpham.php';
     }
      public function getTenThanhPham(){
-    $maKH = $_POST['maKeHoach'];
-    $sql = "SELECT dh.tenSP 
-            FROM donhang dh
-            INNER JOIN kehoachsanxuat kh ON kh.maDonHang = dh.maDonHang
-            WHERE kh.maKeHoach = '$maKH' LIMIT 1";
-    $result = $this->db->query($sql);
-    $tenSP = !empty($result) ? $result[0]['tenSP'] : '';
-    echo json_encode(array('tenSP'=>$tenSP));
-    exit;
-}
+        requireRole(array('manager','leader'));
+        $maKH = $_POST['maKeHoach'];
+        $sql = "SELECT dh.tenSP 
+                FROM donhang dh
+                INNER JOIN kehoachsanxuat kh ON kh.maDonHang = dh.maDonHang
+                WHERE kh.maKeHoach = '$maKH' LIMIT 1";
+        $result = $this->db->query($sql);
+        $tenSP = !empty($result) ? $result[0]['tenSP'] : '';
+        echo json_encode(array('tenSP'=>$tenSP));
+        exit;
+    }
     public function save(){
+        requireRole(array('manager','leader'));
         $maTP = $_POST['maTP'];
         $tenTP = $_POST['tenTP'];
         $soLuong = $_POST['soLuong'];

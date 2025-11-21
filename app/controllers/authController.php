@@ -1,36 +1,65 @@
 <?php
+require_once dirname(__FILE__) . '/../models/nhanVien.php';
+
 class AuthController {
 
     public function login() {
-        session_start();
+        if (session_id() === '') session_start();
 
         $error = '';
 
-        // Mảng tạm chứa user (username => password, role)
-        $users = [
-            'admin' => ['password' => '123456', 'role' => 'Quản trị'],
-            'nv1' => ['password' => '123456', 'role' => 'Nhân viên'],
-        ];
+        $nvModel = new NhanVien();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $username = $_POST['username'];
-            $password = $_POST['password'];
+            $username = isset($_POST['username']) ? trim($_POST['username']) : '';
+            $password = isset($_POST['password']) ? $_POST['password'] : '';
 
-            if (isset($users[$username]) && $users[$username]['password'] === $password) {
-                $_SESSION['username'] = $username;
-                $_SESSION['role'] = $users[$username]['role'];
-                header("Location: index.php?controller=dashboard");
-                exit;
+            if ($username === '' || $password === '') {
+                $error = 'Vui lòng nhập tên đăng nhập và mật khẩu.';
             } else {
-                $error = "Tên đăng nhập hoặc mật khẩu không đúng!";
+                $user = $nvModel->findByUsername($username);
+                if ($user) {
+                    $dbPass = isset($user['matKhau']) ? $user['matKhau'] : '';
+
+                    $ok = false;
+                    // Nếu password lưu theo bcrypt
+                    if (!empty($dbPass) && (strpos($dbPass, '$2y$') === 0 || strpos($dbPass, '$2a$') === 0)) {
+                        if (password_verify($password, $dbPass)) $ok = true;
+                    } else {
+                        // So sánh thẳng (legacy plaintext)
+                        if ($password === $dbPass) $ok = true;
+                    }
+
+                    if ($ok) {
+                        // Lưu thông tin người dùng vào session
+                        $_SESSION['user'] = array(
+                            'maNguoiDung' => isset($user['maNguoiDung']) ? $user['maNguoiDung'] : '',
+                            'tenDangNhap' => isset($user['tenDangNhap']) ? $user['tenDangNhap'] : $username,
+                            'hoTen' => isset($user['hoTen']) ? $user['hoTen'] : '',
+                            'vaiTro' => isset($user['vaiTro']) ? $user['vaiTro'] : '',
+                            'tenXuong' => isset($user['tenXuong']) ? $user['tenXuong'] : '',
+                            'maBoPhan' => isset($user['maBoPhan']) ? $user['maBoPhan'] : '',
+                            'email' => isset($user['email']) ? $user['email'] : '',
+                            'trangThai' => isset($user['trangThai']) ? $user['trangThai'] : ''
+                        );
+
+                        header("Location: index.php?controller=dashboard");
+                        exit;
+                    } else {
+                        $error = 'Tên đăng nhập hoặc mật khẩu không đúng.';
+                    }
+                } else {
+                    $error = 'Tên đăng nhập không tồn tại.';
+                }
             }
         }
 
-        include __DIR__ . '/../views/auth/login.php';
+        include dirname(__FILE__) . '/../views/auth/login.php';
     }
 
     public function logout() {
-        session_start();
+        if (session_id() === '') session_start();
+        unset($_SESSION['user']);
         session_destroy();
         header("Location: index.php?controller=auth&action=login");
         exit;

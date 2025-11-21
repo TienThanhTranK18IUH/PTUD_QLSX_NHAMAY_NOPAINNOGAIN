@@ -14,9 +14,11 @@ if (session_id() === '') {
 }
 
 // 🟢 Gọi file cấu hình
-require_once 'config/config.php';
-require_once 'config/routes.php';
-require_once 'app/models/database.php';
+require_once dirname(__FILE__) . '/config/config.php';
+require_once dirname(__FILE__) . '/config/routes.php';
+require_once dirname(__FILE__) . '/app/models/database.php';
+// Auth helper (role checks)
+require_once dirname(__FILE__) . '/app/helpers/auth.php';
 
 // 🟢 Lấy controller/action (PHP 5.x không dùng ??)
 $controllerName = isset($_GET['controller']) ? $_GET['controller'] : 'dashboard';
@@ -50,6 +52,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) ) {
 // ================================
 // LOAD LAYOUT (chỉ khi GET hoặc POST không exit)
 // ================================
+// Nếu controller là auth (login/logout), xử lý trước, không load layout chung
+$controllerFile = "app/controllers/{$controllerName}Controller.php";
+if ($controllerName === 'auth') {
+    if (file_exists($controllerFile)) {
+        require_once $controllerFile;
+        $controllerClass = ucfirst($controllerName) . 'Controller';
+        if (class_exists($controllerClass)) {
+            $controllerObj = new $controllerClass(new Database());
+            if (method_exists($controllerObj, $action)) {
+                $controllerObj->$action();
+            } else {
+                echo "<div class='content'><h3>❌ Action không tồn tại!</h3></div>";
+            }
+        } else {
+            echo "<div class='content'><h3>❌ Class controller không tồn tại!</h3></div>";
+        }
+        // Kết thúc xử lý auth (login/logout), không include layout
+        exit;
+    }
+}
+
 include 'app/views/layouts/header.php';
 include 'app/views/layouts/sidebar.php';
 

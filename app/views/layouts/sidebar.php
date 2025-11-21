@@ -15,6 +15,11 @@ $al = strtolower($a);
 // Bắt đầu session
 if (session_id() === '') @session_start();
 
+// include auth helper if not loaded
+if (!function_exists('isLoggedIn')) {
+    require_once dirname(__FILE__) . '/../../helpers/auth.php';
+}
+
 // == Hồ sơ người dùng (nếu cần cho menu nhân viên) ==
 $profileUrl = 'index.php?controller=nhanVien&action=thongtin';
 if (isset($_SESSION['user'])) {
@@ -41,58 +46,73 @@ $isSCActive = ($cl==='phieu' && $al==='suachua');
             <li><a href="index.php?controller=dashboard" class="<?php echo nav_active($cl==='dashboard'); ?>">🏠 Trang
                     chủ</a></li>
 
-            <li><a href="index.php?controller=nhanVien"
+                <?php if (checkRole(array('manager'))): ?>
+                <li><a href="index.php?controller=nhanVien"
                     class="<?php echo nav_active($cl==='nhanvien' && $al==='index'); ?>">👷 Nhân sự</a></li>
+                <?php endif; ?>
 
             <!-- 📅 Xem lịch làm & giờ công (CHỈ công nhân) -->
+            <?php if (checkRole(array('worker'))): ?>
             <li>
                 <a href="index.php?controller=lich&action=index" class="<?php echo nav_active($cl==='lich'); ?>">
                     📅 Xem lịch làm &amp; giờ công
                 </a>
             </li>
+            <?php endif; ?>
 
             <!-- 📝 Ghi nhận sản xuất -->
+            <?php if (checkRole(array('manager','leader'))): ?>
             <li>
                 <a href="index.php?controller=sanxuat&action=ghinhan"
                     class="<?php echo ($cl==='sanxuat') ? 'active' : ''; ?>">
                     📝 Ghi nhận sản xuất
                 </a>
             </li>
-        <li><a href="index.php?controller=ghinhanthanhpham"  class="<?php echo nav_active($cl==='ghinhanthanhpham'); ?>">🏭 Ghi nhận thành phẩm</a></li>
+            <li><a href="index.php?controller=ghinhanthanhpham"  class="<?php echo nav_active($cl==='ghinhanthanhpham'); ?>">🏭 Ghi nhận thành phẩm</a></li>
+            <?php endif; ?>
             <!-- Kế hoạch sản xuất (submenu) -->
-        <li class="has-submenu <?php echo ($cl==='kehoach') ? 'open' : ''; ?>">
+            <?php if (checkRole(array('manager','leader','planner'))): ?>
+                        <li class="has-submenu <?php echo ($cl==='kehoach') ? 'open' : ''; ?>">
           <a href="#">🗂 Kế hoạch sản xuất ▾</a>
           <ul class="submenu">
-            <li>
-              <a href="index.php?controller=keHoach&action=index"
-                class="<?php echo nav_active($cl==='kehoach' && $al==='index'); ?>">
-                📋 Xem
-              </a>
-            </li>
-            <li>
-              <a href="index.php?controller=keHoach&action=form_edit"
-                class="<?php echo nav_active($cl==='kehoach' && $al==='form_edit'); ?>">
-                ✏️ Cập nhật
-              </a>
-            </li>
-            <li>
-            <a href="index.php?controller=keHoach&action=lapKeHoach"
-              class="<?php echo nav_active($cl==='kehoach' && $al==='lapkehoach'); ?>">
-              🆕 Lập KHSX
-            </a>
-          </li>
+                        <li>
+                            <a href="index.php?controller=keHoach&action=index"
+                                class="<?php echo nav_active($cl==='kehoach' && $al==='index'); ?>">
+                                📋 Xem
+                            </a>
+                        </li>
+
+                        <?php if (checkRole(array('manager','planner'))): ?>
+                        <li>
+                            <a href="index.php?controller=keHoach&action=form_edit"
+                                class="<?php echo nav_active($cl==='kehoach' && $al==='form_edit'); ?>">
+                                ✏️ Cập nhật
+                            </a>
+                        </li>
+                        <li>
+                        <a href="index.php?controller=keHoach&action=lapKeHoach"
+                            class="<?php echo nav_active($cl==='kehoach' && $al==='lapkehoach'); ?>">
+                            🆕 Lập KHSX
+                        </a>
+                    </li>
+                        <?php endif; ?>
           </ul>
         </li>
+            <?php endif; ?>
+            <?php if (checkRole(array('manager','leader','warehouse','qc','technician'))): ?>
             <li class="has-submenu <?php echo $inPhieuGroup ? 'open' : ''; ?>">
                 <a href="#">📋 Quản lý phiếu ▾</a>
                 <ul class="submenu">
+                    <?php if (checkRole(array('manager','leader'))): ?>
                     <li>
                         <a href="index.php?controller=phieu&amp;action=index"
 class="<?php echo nav_active($cl==='phieu' && $al==='index'); ?>">
                             🧾 Phiếu yêu cầu nguyên liệu
                         </a>
                     </li>
+                    <?php endif; ?>
 
+                    <?php if (checkRole(array('manager','warehouse'))): ?>
                     <li>
                         <a href="index.php?controller=phieunhapNL&amp;action=formNhapPhieu"
                             class="<?php echo nav_active($cl==='phieunhapnl' && $al==='formnhapphieu'); ?>">
@@ -119,31 +139,40 @@ class="<?php echo nav_active($cl==='phieu' && $al==='index'); ?>">
                             📤 Phiếu xuất kho thành phẩm
                         </a>
                     </li>
+                    <?php endif; ?>
 
+                    <?php if (checkRole(array('manager','qc'))): ?>
                     <li>
                         <a href="index.php?controller=phieu&amp;action=kttp"
                             class="<?php echo nav_active($cl==='phieu' && $al==='kttp'); ?>">
                             🧮 Phiếu kiểm tra thành phẩm
                         </a>
                     </li>
+                    <?php endif; ?>
 
+                    <?php if (checkRole(array('manager','leader'))): ?>
                     <li>
                         <a href="index.php?controller=phieu&amp;action=suachua"
                             class="<?php echo nav_active($isSCActive); ?>">
                             🔧 Phiếu bảo trì &amp; sửa chữa
                         </a>
                     </li>
+                    <?php endif; ?>
 
+                    <?php if (checkRole(array('manager','technician'))): ?>
                     <li>
                         <a href="index.php?controller=baotri&amp;action=index"
                             class="<?php echo nav_active($cl==='baotri'); ?>">
                             🪛 Phiếu ghi nhận sửa chữa
                         </a>
                     </li>
+                    <?php endif; ?>
                 </ul>
             </li>
+            <?php endif; ?>
 
             <!-- ⚙️ Phân công & sản xuất -->
+            <?php if (checkRole(array('manager','leader'))): ?>
             <li
                 class="has-submenu <?php echo ($cl==='phancongcongviecsanxuat' || $cl==='phancongdoica') ? 'open' : ''; ?>">
                 <a href="#">⚙️ Phân công &amp; sản xuất ▾</a>
@@ -162,11 +191,16 @@ class="<?php echo nav_active($cl==='phancongcongviecsanxuat' || $cl==='PhanCongC
                     </li>
                 </ul>
             </li>
+            <?php endif; ?>
 
-            <li><a href="index.php?controller=baoTri" class="<?php echo nav_active($cl==='baotri'); ?>">🔧 Bảo trì &amp;
+                <?php if (checkRole(array('manager','leader'))): ?>
+                <li><a href="index.php?controller=baoTri" class="<?php echo nav_active($cl==='baotri'); ?>">🔧 Bảo trì &amp;
                     sửa chữa</a></li>
-            <li><a href="index.php?controller=thongKe" class="<?php echo nav_active($cl==='thongke'); ?>">📊 Thống kê
+                <?php endif; ?>
+                <?php if (checkRole(array('manager','leader'))): ?>
+                <li><a href="index.php?controller=thongKe" class="<?php echo nav_active($cl==='thongke'); ?>">📊 Thống kê
                     &amp; báo cáo</a></li>
+                <?php endif; ?>
         </ul>
     </nav>
 

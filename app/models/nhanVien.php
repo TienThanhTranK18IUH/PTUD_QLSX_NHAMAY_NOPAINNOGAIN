@@ -131,6 +131,14 @@ class NhanVien {
         return ($result && $result->num_rows > 0) ? $result->fetch_assoc() : null;
     }
 
+    // ===== Lấy nhân viên theo username (tenDangNhap) =====
+    public function findByUsername($username) {
+        $username = $this->conn->real_escape_string($username);
+        $sql = "SELECT * FROM nguoidung WHERE tenDangNhap = '$username' LIMIT 1";
+        $result = $this->conn->query($sql);
+        return ($result && $result->num_rows > 0) ? $result->fetch_assoc() : null;
+    }
+
     // ===== Liệt kê công nhân theo xưởng =====
     public function listByXuong($tenXuong) {
         $tenXuong = $this->conn->real_escape_string($tenXuong);

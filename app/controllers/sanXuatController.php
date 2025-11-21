@@ -3,6 +3,7 @@
 require_once dirname(__FILE__).'/../models/database.php';
 require_once dirname(__FILE__).'/../models/chamCong.php';  // <— sửa C thường
 require_once dirname(__FILE__).'/../models/nhanVien.php';
+require_once dirname(__FILE__) . '/../helpers/auth.php';
 
 class SanXuatController {
     private $db,$conn,$mChamCong,$mNhanVien;
@@ -31,6 +32,7 @@ class SanXuatController {
     }
 
     public function ghinhan(){
+        requireRole(array('manager','leader'));
         $xt=array('maNguoiDung'=>'ND001','hoTen'=>'Xuong Truong','vaiTro'=>'XuongTruong','tenXuong'=>'');
         if ($this->conn){
             $rs=$this->conn->query("SELECT maNguoiDung,hoTen,vaiTro,tenXuong
@@ -58,6 +60,7 @@ class SanXuatController {
     }
 
     public function save(){
+        requireRole(array('manager','leader'));
         $maCN = isset($_POST['maNguoiDung'])?$_POST['maNguoiDung']:'';
         $tenCN=''; if ($maCN!=='' && $this->conn){
             $esc=$this->conn->real_escape_string($maCN);

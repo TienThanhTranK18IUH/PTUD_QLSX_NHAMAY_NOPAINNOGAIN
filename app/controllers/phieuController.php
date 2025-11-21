@@ -4,6 +4,7 @@ require_once dirname(__FILE__).'/../models/phieuYeuCau.php';
 require_once dirname(__FILE__).'/../models/PhieuSuaChua.php';
 require_once dirname(__FILE__).'/../models/PhieuKTTP.php';
 require_once dirname(__FILE__) . '/../models/PhieuNhapKho.php';
+require_once dirname(__FILE__) . '/../helpers/auth.php';
 
 class PhieuController {
 
@@ -40,6 +41,7 @@ class PhieuController {
 
     /* ================== YÊU CẦU NGUYÊN LIỆU ================== */
     public function index() {
+        requireRole(array('manager','leader'));
         $title = 'Danh sách yêu cầu nhận nguyên liệu';
         $notice_ok   = (isset($_GET['ok']) && $_GET['ok'] === '1');
         $notice_code = isset($_GET['code']) ? trim($_GET['code']) : '';
@@ -49,6 +51,7 @@ class PhieuController {
     }
 
     public function yeucau_nguyenlieu() {
+        requireRole(array('manager','leader'));
         $title    = 'Thông tin lập phiếu yêu cầu nhận nguyên liệu';
         $msg      = '';
         $kehoach  = null;
@@ -94,12 +97,14 @@ class PhieuController {
 
     /* ================== SỬA CHỮA ================== */
     public function suachua() {
+        requireRole(array('manager','leader'));
         $title  = 'Phiếu bảo trì & sửa chữa';
         $phieus = $this->scModel->getAll();
         include 'app/views/phieu/suachua_index.php';
     }
 
     public function add_suachua() {
+        requireRole(array('manager','leader'));
         $title     = 'Lập phiếu yêu cầu sửa chữa';
         $thietbis  = $this->scModel->getAllThietBi();
         $nhanviens = $this->scModel->getAllNguoiDung();
@@ -107,6 +112,7 @@ class PhieuController {
     }
 
     public function save_suachua() {
+        requireRole(array('manager','leader'));
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('index.php?controller=phieu&action=suachua');
             return;

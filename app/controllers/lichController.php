@@ -5,6 +5,8 @@ require_once dirname(__FILE__).'/../models/nhanVien.php';
 require_once dirname(__FILE__).'/../models/chamCong.php';
 require_once dirname(__FILE__).'/../models/PhanCongCongViecSanXuat.php';
 require_once dirname(__FILE__).'/../models/lichLamViec.php';
+// Auth helper
+require_once dirname(__FILE__).'/../helpers/auth.php';
 
 class LichController {
     private $mNhanVien, $mChamCong, $mPhanCong, $mLLV;
@@ -83,6 +85,9 @@ class LichController {
     }
 
     public function index(){
+        // Chỉ cho phép công nhân truy cập lịch làm & giờ công
+        requireRole('worker');
+
         $nv  = isset($_GET['nv']) ? trim($_GET['nv']) : '';
         $d   = isset($_GET['d'])  ? trim($_GET['d'])  : date('Y-m-d');
         $tab = isset($_GET['tab'])? trim($_GET['tab']): 'lich';

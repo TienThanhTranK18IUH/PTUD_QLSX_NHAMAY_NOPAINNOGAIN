@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__FILE__) . '/../models/PhanCongDoiCa.php';
+require_once dirname(__FILE__) . '/../helpers/auth.php';
 
 class PhanCongDoiCaController {
     private $model;
@@ -10,6 +11,7 @@ class PhanCongDoiCaController {
 
     // Hiển thị giao diện
     public function index() {
+        requireRole(array('manager','leader'));
         $congNhanChuaPhanCa = $this->model->getCongNhanChuaPhanCa();
         $congNhanDaPhanCa   = $this->model->getCongNhanDaPhanCa();
         $danhSachCa         = $this->model->getDanhSachCa();
@@ -20,6 +22,7 @@ class PhanCongDoiCaController {
 
     // Cập nhật phân công / đổi ca
     public function capNhat() {
+        requireRole(array('manager','leader'));
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             return $this->index();
         }

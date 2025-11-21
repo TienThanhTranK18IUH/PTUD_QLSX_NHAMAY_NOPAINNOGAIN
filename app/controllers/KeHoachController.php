@@ -7,6 +7,7 @@ class KeHoachController {
     private $model;
 
     public function __construct() {
+        require_once dirname(__FILE__) . '/../helpers/auth.php';
         $this->model = new KeHoachSanXuat();
     }
 
@@ -18,6 +19,8 @@ class KeHoachController {
 
     // Form edit kế hoạch
     public function form_edit() {
+        // Only managers, leaders and planners can access the edit form
+        requireRole(array('manager','leader','planner'));
         $kehoachs = $this->model->getAll();
         $xuongs = $this->model->getAllXuongs();
         $sanphams = $this->model->getAllSanPhams();
@@ -28,6 +31,8 @@ class KeHoachController {
     }
     // Cập nhật kế hoạch
 public function update() {
+        // Only planners and managers may update plans
+        requireRole(array('manager','planner'));
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['maKeHoach'])) {
         $maKH = $_POST['maKeHoach'];
         $maDonHang = $_POST['maDonHang'];
@@ -76,6 +81,9 @@ exit();
 
 }
     public function lapKeHoach() {
+
+    // Only planners and managers may create new plans
+    requireRole(array('manager','planner'));
 
     $khModel = new KeHoachSanXuat();
     $dhModel = new DonHang();

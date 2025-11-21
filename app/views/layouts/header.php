@@ -17,15 +17,16 @@ if(session_id() == '') {
     <div class="header-container">
         <h1>🏭 HỆ THỐNG QUẢN LÝ SẢN XUẤT NHÀ MÁY</h1>
         <div class="user-info">
-            <span>
-                Xin chào, 
-                <?php 
-                    $username = $_SESSION['username'];
-                    $role = $_SESSION['role'];
-                    echo htmlspecialchars($username) . " (" . htmlspecialchars($role) . ")";
-                ?>
-            </span>
-            <a href="index.php?controller=auth&action=logout" class="logout-btn">Đăng xuất</a>
+            <?php if (isset($_SESSION['user']) && !empty($_SESSION['user'])): 
+                $u = $_SESSION['user'];
+                $displayName = isset($u['tenDangNhap']) ? $u['tenDangNhap'] : (isset($u['hoTen']) ? $u['hoTen'] : '');
+                $displayRole = isset($u['vaiTro']) ? $u['vaiTro'] : '';
+            ?>
+                <span>Xin chào, <?php echo htmlspecialchars($displayName) . ' (' . htmlspecialchars($displayRole) . ')'; ?></span>
+                <a href="index.php?controller=auth&action=logout" class="logout-btn">Đăng xuất</a>
+            <?php else: ?>
+                <a href="index.php?controller=auth&action=login" class="logout-btn">Đăng nhập</a>
+            <?php endif; ?>
         </div>
     </div>
 </header>
