@@ -4,7 +4,7 @@ require_once dirname(__FILE__) . '/../models/PhieuXuatKhoTP.php';
 class phieuNhapXuatController {
 
     // Xử lý lưu phiếu
-    public function luuphieu() {
+public function luuphieu() {
     $px = new PhieuXuatKhoTP();
 
     if (!isset($_POST['maDonHang']) || $_POST['maDonHang'] == '') {
@@ -20,26 +20,28 @@ class phieuNhapXuatController {
         exit;
     }
 
-    $data = array(
-        'maPhieu' => $_POST['maPhieu'],
-        'maKho' => $_POST['maKho'],
-        'ngayXuat' => $_POST['ngayXuat'],
-        'maNguoiLap' => $_POST['maNguoiLap'],
-        'maDonHang' => $_POST['maDonHang'],
-        'maTP' => $_POST['maTP'],
-        'soLuong' => $_POST['soLuong']
-    );
-
-    // Kiểm tra thành phẩm tồn tại
-    $thanhPham = $px->getThanhPham($data['maTP']);
-    if (!$thanhPham) {
+    // -----------------------------
+    // Lấy thông tin từ đơn hàng
+    $donHang = $px->getDonHang($maDonHang);
+    if (!$donHang) {
         header('Location: index.php?controller=phieuNhapXuat&action=xuatkhotp&error=3');
         exit;
     }
 
+    // Gán dữ liệu từ DonHang
+    $data['maTP']   = $donHang['maTP'];
+    $data['tenTP']  = $donHang['tenSP'];  // dùng để hiển thị
+    $data['soLuong'] = $_POST['soLuong']; // hoặc $donHang['soLuong'] nếu muốn xuất hết
+    $data['maPhieu'] = $_POST['maPhieu'];
+    $data['maKho'] = 'K002'; // Kho thành phẩm mặc định
+    $data['ngayXuat']= $_POST['ngayXuat'];
+    $data['maNguoiLap'] = $_POST['maNguoiLap'];
+    $data['maDonHang']  = $maDonHang;
+    // -----------------------------
+
     // Kiểm tra số lượng
-    if ($thanhPham['soLuong'] < $data['soLuong']) {
-        header('Location: index.php?controller=phieuNhapXuat&action=xuatkhotp&error=4&tenSP='.$thanhPham['tenTP']);
+    if ($donHang['soLuong'] < $data['soLuong']) {
+        header('Location: index.php?controller=phieuNhapXuat&action=xuatkhotp&error=4&tenSP='.$donHang['tenSP']);
         exit;
     }
 
@@ -51,6 +53,7 @@ class phieuNhapXuatController {
 
     header('Location: index.php?controller=phieuNhapXuat&action=xuatkhotp&success=1');
 }
+
 
 
     // Hiển thị form lập phiếu

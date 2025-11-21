@@ -178,11 +178,12 @@ class PhieuXuatKhoTP {
 
     // Lấy danh sách đơn hàng kèm tên thành phẩm
     public function getAllDonHangWithTP() {
-        $sql = "SELECT dh.maDonHang, dh.maTP, dh.soLuong AS soLuongDH, tp.tenTP
-                FROM DonHang dh
-                LEFT JOIN ThanhPham tp ON dh.maTP = tp.maTP
-                ORDER BY dh.maDonHang ASC";
-        return $this->db->query($sql);
-    }
+    $sql = "SELECT maDonHang, maTP, tenSP AS tenTP, soLuong AS soLuongDH
+            FROM DonHang
+            WHERE maDonHang NOT IN (SELECT maDonHang FROM PhieuXuatKhoTP)
+            ORDER BY maDonHang ASC";
+    return $this->db->query($sql);
+}
+
 }
 ?>

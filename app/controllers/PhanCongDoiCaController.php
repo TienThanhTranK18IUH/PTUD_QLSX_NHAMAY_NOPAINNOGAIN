@@ -8,39 +8,38 @@ class PhanCongDoiCaController {
         $this->model = new PhanCongDoiCa();
     }
 
+    // Hiển thị giao diện
     public function index() {
         $congNhanChuaPhanCa = $this->model->getCongNhanChuaPhanCa();
-        $congNhanDaPhanCa = $this->model->getCongNhanDaPhanCa();
-        $danhSachCa = $this->model->getDanhSachCa();
-        $message = '';
+        $congNhanDaPhanCa   = $this->model->getCongNhanDaPhanCa();
+        $danhSachCa         = $this->model->getDanhSachCa();
+        $message            = isset($_GET['msg']) ? $_GET['msg'] : '';
+
         include dirname(__FILE__) . '/../views/phancong/PhanCongDoiCaLamViec.php';
     }
 
+    // Cập nhật phân công / đổi ca
     public function capNhat() {
-        // Only handle updates on POST. If called via GET, show the index view
-        // (avoid calling PHP header() after layout has been output).
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             return $this->index();
         }
 
-        // Now we are in POST. Validate required fields.
-        if (!isset($_POST['maNguoiDung']) || !isset($_POST['maCa'])) {
-            $message = 'Thiếu dữ liệu cập nhật.';
-            $congNhanChuaPhanCa = $this->model->getCongNhanChuaPhanCa();
-            $congNhanDaPhanCa = $this->model->getCongNhanDaPhanCa();
-            $danhSachCa = $this->model->getDanhSachCa();
-            include dirname(__FILE__) . '/../views/phancong/PhanCongDoiCaLamViec.php';
-            return;
+        if(!isset($_POST['maNguoiDung']) || !isset($_POST['maCa']) || !isset($_POST['maXuong'])) {
+            $msg = 'Thiếu dữ liệu bắt buộc.';
+            header("Location: index.php?controller=PhanCongDoiCa&action=index&msg=".urlencode($msg));
+            exit;
         }
 
         $maNguoiDung = $_POST['maNguoiDung'];
-        $maCa = $_POST['maCa'];
+        $maCa        = $_POST['maCa'];
+        $maXuong     = $_POST['maXuong'];
+        $ngayBatDau  = isset($_POST['ngayBatDau']) ? $_POST['ngayBatDau'] : '';
+        $ngayKetThuc = isset($_POST['ngayKetThuc']) ? $_POST['ngayKetThuc'] : '';
 
-        $result = $this->model->capNhatCa($maNguoiDung, $maCa);
-        // Use PRG: redirect to the index action with a message so the layout (sidebar) is rendered.
-        $msg = isset($result['message']) ? $result['message'] : 'updated';
-        $url = 'index.php?controller=PhanCongDoiCa&action=index&msg=' . urlencode($msg);
-        header("Location: " . $url);
+        $result = $this->model->capNhatCa($maNguoiDung, $maCa, $maXuong, $ngayBatDau, $ngayKetThuc);
+
+        $msg = isset($result['message']) ? $result['message'] : 'Cập nhật thành công';
+        header("Location: index.php?controller=PhanCongDoiCa&action=index&msg=".urlencode($msg));
         exit;
     }
 }

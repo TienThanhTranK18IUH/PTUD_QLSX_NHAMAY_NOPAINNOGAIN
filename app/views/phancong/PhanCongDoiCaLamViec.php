@@ -2,158 +2,186 @@
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <title>Phân công / Đổi ca công nhân</title>
+    <meta charset="utf-8">
+    <title>Phân công / Đổi ca</title>
     <style>
     body {
         font-family: Arial;
+        margin: 20px;
     }
 
-    table {
-        border-collapse: collapse;
-        width: 80%;
-        margin-bottom: 20px;
-    }
-
-    th,
-    td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: center;
-    }
-
-    th {
-        background-color: #eee;
-    }
-
-    .tab {
+    .tabs {
         margin-bottom: 10px;
     }
 
-    .tab button {
-        padding: 10px;
+    .tabs button {
+        background: #007BFF;
+        color: white;
+        border: none;
+        padding: 10px 20px;
         cursor: pointer;
+        margin-right: 5px;
+    }
+
+    .tabs button:hover {
+        background: #0056b3;
     }
 
     .tabcontent {
-        display: none;
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 5px;
+        background: #f9f9f9;
     }
 
-    .tabcontent.active {
+    form label {
         display: block;
+        margin: 10px 0 5px;
+    }
+
+    form select,
+    form input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border-radius: 3px;
+        border: 1px solid #ccc;
+    }
+
+    form button {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+
+    form button:hover {
+        background: #218838;
+    }
+
+    .message {
+        padding: 10px;
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        margin-bottom: 15px;
+        border-radius: 3px;
     }
     </style>
-    <script>
-    function openTab(tabName) {
-        var i, x, tablinks;
-        x = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < x.length; i++) x[i].className = x[i].className.replace(" active", "");
-        document.getElementById(tabName).className += " active";
-    }
-
-    function confirmAction(formId, actionText) {
-        if (confirm(actionText)) {
-            document.getElementById(formId).submit();
-        }
-    }
-    </script>
 </head>
 
 <body>
-    <h2>Quản lý phân công / đổi ca công nhân</h2>
 
-    <?php if(isset($message) && $message != ''): ?>
-    <p style="color:green;"><?php echo $message; ?></p>
+    <div class="tabs">
+        <button onclick="showTab('phancong')">Phân công ca</button>
+        <button onclick="showTab('doica')">Đổi ca</button>
+    </div>
+
+    <?php if(!empty($message)): ?>
+    <div class="message"><?php echo htmlspecialchars($message); ?></div>
     <?php endif; ?>
 
-    <div class="tab">
-        <button onclick="openTab('PhanCong')">Phân công</button>
-        <button onclick="openTab('DoiCa')">Đổi ca</button>
+
+    <!-- Phân công ca -->
+    <div id="phancong" class="tabcontent" style="display:block;">
+        <h3>Phân công ca làm việc</h3>
+        <form method="POST" action="index.php?controller=PhanCongDoiCa&action=capNhat">
+            <label>Công nhân (chưa phân ca):</label>
+            <select name="maNguoiDung" id="cnChuaPC" onchange="fillXuong('cnChuaPC','xuongPC')" required>
+                <option value="">-- Chọn công nhân --</option>
+                <?php foreach($congNhanChuaPhanCa as $cn): ?>
+                <option value="<?php echo $cn['maNguoiDung']; ?>" data-xuong="<?php echo $cn['maXuong']; ?>">
+                    <?php echo $cn['maNguoiDung'] . ' - ' . $cn['tenCongNhan']; ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
+
+            <label>Xưởng:</label>
+            <input type="text" name="maXuong" id="xuongPC" readonly required>
+
+            <label>Chọn ca:</label>
+            <select name="maCa" required>
+                <option value="">-- Chọn ca --</option>
+                <?php foreach($danhSachCa as $ca): ?>
+                <option value="<?php echo $ca['maCa']; ?>">
+                    <?php echo $ca['maCa'] . ' (' . $ca['thoiGianBatDau'].'-'.$ca['thoiGianKetThuc'].')'; ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
+
+            <label>Ngày bắt đầu:</label>
+            <input type="date" name="ngayBatDau" required>
+
+            <label>Ngày kết thúc:</label>
+            <input type="date" name="ngayKetThuc" required>
+
+            <button type="submit">Lưu phân công</button>
+        </form>
     </div>
 
-    <div id="PhanCong" class="tabcontent active">
-        <h3>Phân công công nhân chưa có ca</h3>
-        <?php if(count($congNhanChuaPhanCa) == 0): ?>
-        <p>Chưa có công nhân nào cần phân công.</p>
-        <?php else: ?>
-        <table>
-            <tr>
-                <th>Mã NV</th>
-                <th>Họ tên</th>
-                <th>Chọn ca</th>
-                <th>Hành động</th>
-            </tr>
-            <?php foreach($congNhanChuaPhanCa as $cn): ?>
-            <tr>
-                <td><?php echo $cn['maNguoiDung']; ?></td>
-                <td><?php echo $cn['hoTen']; ?></td>
-                <form id="phancong_<?php echo $cn['maNguoiDung']; ?>" method="post"
-                    action="index.php?controller=PhanCongDoiCa&action=capNhat">
-                    <td>
-                        <select name="maCa">
-                            <?php foreach($danhSachCa as $ca): ?>
-                            <option value="<?php echo $ca; ?>"><?php echo $ca; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <input type="hidden" name="maNguoiDung" value="<?php echo $cn['maNguoiDung']; ?>">
-                    </td>
-                    <td>
-                        <button type="button"
-                            onclick="confirmAction('phancong_<?php echo $cn['maNguoiDung']; ?>','Xác nhận phân công ca này cho công nhân?')">Phân
-                            công</button>
-                    </td>
-                </form>
-            </tr>
-            <?php endforeach; ?>
-        </table>
-        <?php endif; ?>
-    </div>
+    <!-- Đổi ca -->
+    <div id="doica" class="tabcontent" style="display:none;">
+        <h3>Đổi ca làm việc</h3>
+        <form method="POST" action="index.php?controller=PhanCongDoiCa&action=capNhat">
+            <label>Công nhân (đã phân ca):</label>
+            <select name="maNguoiDung" id="cnDaPC" onchange="fillXuong('cnDaPC','xuongDC'); fillCaMoi()" required>
+                <option value="">-- Chọn công nhân --</option>
+                <?php foreach($congNhanDaPhanCa as $cn): ?>
+                <option value="<?php echo $cn['maNguoiDung']; ?>" data-xuong="<?php echo $cn['maXuong']; ?>"
+                    data-cahientai="<?php echo $cn['maCa']; ?>">
+                    <?php echo $cn['maNguoiDung'] . ' - ' . $cn['tenCongNhan'] . ' (Ca hiện tại: '.$cn['maCa'].')'; ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
 
-    <div id="DoiCa" class="tabcontent">
-        <h3>Đổi ca cho công nhân đã có ca</h3>
-        <?php if(count($congNhanDaPhanCa) == 0): ?>
-        <p>Chưa có công nhân nào để đổi ca.</p>
-        <?php else: ?>
-        <table>
-            <tr>
-                <th>Mã NV</th>
-                <th>Họ tên</th>
-                <th>Ca hiện tại</th>
-                <th>Chọn ca mới</th>
-                <th>Hành động</th>
-            </tr>
-            <?php foreach($congNhanDaPhanCa as $cn): ?>
-            <tr>
-                <td><?php echo $cn['maNguoiDung']; ?></td>
-                <td><?php echo $cn['hoTen']; ?></td>
-                <td><?php echo $cn['maCa']; ?></td>
-                <form id="doica_<?php echo $cn['maNguoiDung']; ?>" method="post"
-                    action="index.php?controller=PhanCongDoiCa&action=capNhat">
-                    <td>
-                        <select name="maCa">
-                            <?php foreach($danhSachCa as $ca): ?>
-                            <option value="<?php echo $ca; ?>" <?php if($ca==$cn['maCa']) echo 'selected'; ?>>
-                                <?php echo $ca; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <input type="hidden" name="maNguoiDung" value="<?php echo $cn['maNguoiDung']; ?>">
-                    </td>
-                    <td>
-                        <button type="button"
-                            onclick="confirmAction('doica_<?php echo $cn['maNguoiDung']; ?>','Xác nhận đổi ca cho công nhân?')">Đổi
-                            ca</button>
-                    </td>
-                </form>
-            </tr>
-            <?php endforeach; ?>
-        </table>
-        <?php endif; ?>
+            <label>Xưởng:</label>
+            <input type="text" name="maXuong" id="xuongDC" readonly required>
+
+            <label>Chọn ca mới:</label>
+            <select name="maCa" id="caMoi" required>
+                <option value="">-- Chọn ca mới --</option>
+                <?php foreach($danhSachCa as $ca): ?>
+                <option value="<?php echo $ca['maCa']; ?>">
+                    <?php echo $ca['maCa'].' ('.$ca['thoiGianBatDau'].'-'.$ca['thoiGianKetThuc'].')'; ?></option>
+                <?php endforeach; ?>
+            </select>
+
+            <label>Ngày bắt đầu:</label>
+            <input type="date" name="ngayBatDau" required>
+
+            <label>Ngày kết thúc:</label>
+            <input type="date" name="ngayKetThuc" required>
+
+            <button type="submit">Cập nhật / Đổi ca</button>
+        </form>
     </div>
 
     <script>
-    // Mặc định hiển thị tab Phân công
-    openTab('PhanCong');
+    function showTab(tab) {
+        document.getElementById('phancong').style.display = 'none';
+        document.getElementById('doica').style.display = 'none';
+        document.getElementById(tab).style.display = 'block';
+    }
+
+    function fillXuong(selectId, inputId) {
+        var sel = document.getElementById(selectId);
+        var xuong = sel.options[sel.selectedIndex].getAttribute('data-xuong');
+        document.getElementById(inputId).value = xuong;
+    }
+
+    function fillCaMoi() {
+        var sel = document.getElementById('cnDaPC');
+        var caHienTai = sel.options[sel.selectedIndex].getAttribute('data-cahientai');
+        var caMoi = document.getElementById('caMoi');
+        for (var i = 0; i < caMoi.options.length; i++) {
+            caMoi.options[i].style.display = (caMoi.options[i].value == caHienTai) ? 'none' : 'block';
+        }
+        caMoi.value = ""; // reset chọn
+    }
     </script>
+
 </body>
 
 </html>

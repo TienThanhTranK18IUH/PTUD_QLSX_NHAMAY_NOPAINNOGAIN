@@ -8,55 +8,76 @@ class PhanCongDoiCa {
         $this->db = new Database();
     }
 
-    // Lấy danh sách công nhân chưa được phân ca
+    // Lấy công nhân chưa phân ca
     public function getCongNhanChuaPhanCa() {
-        $sql = "SELECT nv.maNguoiDung, nv.hoTen
-                FROM nguoidung nv
-                LEFT JOIN phancong p ON nv.maNguoiDung = p.maNguoiDung
-                WHERE nv.vaiTro='CongNhan' AND p.maCa IS NULL";
+        $sql = "SELECT cc.maNguoiDung, cc.tenCongNhan, cc.maXuong
+                FROM chamcong cc
+                LEFT JOIN phancong p ON cc.maNguoiDung = p.maNguoiDung
+                WHERE p.maCa IS NULL
+                GROUP BY cc.maNguoiDung";
         return $this->db->query($sql);
     }
 
-    // Lấy danh sách công nhân đã được phân ca
+    // Lấy công nhân đã phân ca
     public function getCongNhanDaPhanCa() {
-        $sql = "SELECT nv.maNguoiDung, nv.hoTen, p.maCa
-                FROM nguoidung nv
-                JOIN phancong p ON nv.maNguoiDung = p.maNguoiDung
-                WHERE nv.vaiTro='CongNhan' AND p.maCa IS NOT NULL";
+        $sql = "SELECT p.maNguoiDung, cc.tenCongNhan, cc.maXuong, p.maCa
+                FROM phancong p
+                JOIN chamcong cc ON p.maNguoiDung = cc.maNguoiDung
+                GROUP BY p.maNguoiDung";
         return $this->db->query($sql);
     }
 
-    // Kiểm tra trùng ca
-    public function kiemTraTrungCa($maCa, $maNguoiDung) {
-        $sql = "SELECT * FROM phancong WHERE maCa='$maCa' AND maNguoiDung='$maNguoiDung'";
-        $result = $this->db->query($sql);
-        return count($result) > 0;
-    }
-
-    // Phân công mới hoặc đổi ca
-    public function capNhatCa($maNguoiDung, $maCa) {
-        $sqlCheck = "SELECT maCa FROM phancong WHERE maNguoiDung='$maNguoiDung'";
-        $current = $this->db->query($sqlCheck);
-
-        if(count($current) > 0 && $current[0]['maCa'] == $maCa) {
-            return array('success' => false, 'message' => 'Ca mới trùng với ca hiện tại. Vui lòng chọn lại.');
-        }
-
-        if(count($current) > 0) {
-            // Đổi ca
-            $sql = "UPDATE phancong SET maCa='$maCa' WHERE maNguoiDung='$maNguoiDung'";
-        } else {
-            // Phân công mới
-            $sql = "INSERT INTO phancong (maNguoiDung, maCa) VALUES ('$maNguoiDung','$maCa')";
-        }
-
-        $this->db->query($sql);
-        return array('success' => true, 'message' => (count($current) > 0 ? 'Đổi ca thành công.' : 'Phân công ca thành công.'));
-    }
-
-    // Danh sách các ca có sẵn
+    // Lấy danh sách ca từ bảng calamviec
     public function getDanhSachCa() {
-        return array('C1','C2','C3'); // ví dụ các ca
+        $sql = "SELECT maCa, thoiGianBatDau, thoiGianKetThuc FROM calamviec ORDER BY maCa";
+        return $this->db->query($sql);
     }
+
+    // Cập nhật phân công / đổi ca
+    public function capNhatCa($maNguoiDung, $maCa, $maXuong = null, $ngayBatDau = null, $ngayKetThuc = null) {
+    $maNguoiDungEsc = $this->db->conn->real_escape_string($maNguoiDung);
+    $maCaEsc        = $this->db->conn->real_escape_string($maCa);
+    $maXuongEsc     = $maXuong !== null ? $this->db->conn->real_escape_string($maXuong) : '';
+    $ngayBatDauEsc  = $ngayBatDau !== null ? $ngayBatDau : '';
+    $ngayKetThucEsc = $ngayKetThuc !== null ? $ngayKetThuc : '';
+
+    $sqlCheck = "SELECT maCa FROM phancong WHERE maNguoiDung='$maNguoiDungEsc'";
+    $current = $this->db->query($sqlCheck);
+
+    if(count($current) > 0) {
+        $sql = "UPDATE phancong SET 
+                    maCa='$maCaEsc',
+                    maXuong='$maXuongEsc',
+                    ngayBatDau='$ngayBatDauEsc',
+                    ngayKetThuc='$ngayKetThucEsc'
+                WHERE maNguoiDung='$maNguoiDungEsc'";
+    } else {
+        $sql = "INSERT INTO phancong (maNguoiDung, maCa, maXuong, ngayBatDau, ngayKetThuc)
+                VALUES ('$maNguoiDungEsc','$maCaEsc','$maXuongEsc','$ngayBatDauEsc','$ngayKetThucEsc')";
+    }
+
+    // Thực thi SQL với try-catch
+    try {
+        if ($this->db->conn->query($sql) === TRUE) {
+            return array(
+                'success'=>true,
+                'message'=> count($current)>0 ? 'Đổi ca thành công.' : 'Phân công ca thành công.'
+            );
+        } else {
+            // Nếu có lỗi SQL, không in ra trực tiếp
+            return array(
+                'success'=>false,
+                'message'=> 'Không thể lưu dữ liệu. Vui lòng kiểm tra thông tin ca hoặc dữ liệu khác.'
+            );
+        }
+    } catch(Exception $e) {
+        // Bắt tất cả exception, không hiện lỗi SQL
+        return array(
+            'success'=>false,
+            'message'=> 'Có lỗi xảy ra khi lưu dữ liệu. Vui lòng kiểm tra lại.'
+        );
+    }
+}
+
 }
 ?>
