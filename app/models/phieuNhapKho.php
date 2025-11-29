@@ -13,7 +13,7 @@ class PhieuNhapKho {
         $rows = $this->db->query("SELECT maPhieu FROM PhieuNhapKhoTP ORDER BY maPhieu DESC LIMIT 1");
         if (!empty($rows)) {
             $last = $rows[0]['maPhieu'];
-            $num = (int)substr($last, 5) + 1;
+            $num = (int)substr($last, 4) + 1; // PNTP001 -> lấy phần số
             return 'PNTP' . str_pad($num, 3, '0', STR_PAD_LEFT);
         }
         return 'PNTP001';
@@ -36,40 +36,48 @@ class PhieuNhapKho {
         return $this->db->query("SELECT maKho, tenKho FROM Kho WHERE loaiKho = 'ThanhPham'");
     }
 
-    // Danh sách thành phẩm
+    // Danh sách thành phẩm chưa lập phiếu (ẩn TP đã lập)
     public function getAllThanhPham() {
-        return $this->db->query("SELECT maTP, tenTP, soLuong FROM ThanhPham");
+        return $this->db->query("
+            SELECT maTP, tenTP, soLuong 
+            FROM ThanhPham 
+            WHERE maTP NOT IN (SELECT maTP FROM PhieuNhapKhoTP)
+        ");
+    }
+
+    // Kiểm tra TP đã lập phiếu chưa
+    public function checkExistTP($maTP) {
+        $rows = $this->db->query("SELECT maTP FROM PhieuNhapKhoTP WHERE maTP = '$maTP'");
+        return !empty($rows);
     }
 
     // Lưu phiếu nhập kho thành phẩm
-public function create($data) {
-    $maPhieu    = $data['maPhieu'];
-    $maKho      = $data['maKho'];
-    $ngayNhap   = $data['ngayNhap'];
-    $maNguoiLap = $data['maNguoiLap'];
-    $trangThai  = $data['trangThai'];
-    $maTP       = $data['maTP'];
-    $soLuong    = (int)$data['soLuong'];
+    public function create($data) {
+        $maPhieu    = $data['maPhieu'];
+        $maKho      = $data['maKho'];
+        $ngayNhap   = $data['ngayNhap'];
+        $maNguoiLap = $data['maNguoiLap'];
+        $trangThai  = $data['trangThai'];
+        $maTP       = $data['maTP'];
+        $soLuong    = (int)$data['soLuong'];
 
-    $sql = "
-        INSERT INTO PhieuNhapKhoTP (maPhieu, maKho, ngayNhap, maNguoiLap, trangThai, maTP, soLuong)
-        VALUES ('$maPhieu', '$maKho', '$ngayNhap', '$maNguoiLap', N'$trangThai', '$maTP', $soLuong)
-    ";
+        $sql = "
+            INSERT INTO PhieuNhapKhoTP (maPhieu, maKho, ngayNhap, maNguoiLap, trangThai, maTP, soLuong)
+            VALUES ('$maPhieu', '$maKho', '$ngayNhap', '$maNguoiLap', N'$trangThai', '$maTP', $soLuong)
+        ";
 
-    // ✅ Tạo kết nối riêng cho lệnh INSERT (không dùng query() mặc định)
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    $conn->set_charset(DB_CHARSET);
-    $result = $conn->query($sql);
-    
-    if ($result === TRUE) {
-        return true;
-    } else {
-        echo "<pre style='color:red;'>❌ Lỗi SQL: $sql</pre>";
-        echo "<pre style='color:red;'>MySQL báo: " . $conn->error . "</pre>";
-        return false;
+        // Tạo kết nối riêng cho INSERT
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+        $conn->set_charset(DB_CHARSET);
+        $result = $conn->query($sql);
+
+        if ($result === TRUE) {
+            return true;
+        } else {
+            echo "<pre style='color:red;'>❌ Lỗi SQL: $sql</pre>";
+            echo "<pre style='color:red;'>MySQL báo: " . $conn->error . "</pre>";
+            return false;
+        }
     }
-}
-
-
 }
 ?>

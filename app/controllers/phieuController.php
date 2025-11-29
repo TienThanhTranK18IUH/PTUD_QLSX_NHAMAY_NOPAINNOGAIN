@@ -187,49 +187,85 @@ class PhieuController {
     }
 
     public function pnk_taoPhieu() {
-        $modelPNK = new PhieuNhapKho($this->db);
-        $title = 'Lập Phiếu Nhập Kho Thành Phẩm';
-        $maPhieu = $modelPNK->getNextMaPhieu();
-        $dsThanhPham = $modelPNK->getAllThanhPham();
-        $dsKho = $modelPNK->getAllKho();
-        include 'app/views/phieu/PhieuNhapKho.php';
-    }
+    $modelPNK = new PhieuNhapKho($this->db);
+    $title = 'Lập Phiếu Nhập Kho Thành Phẩm';
+    $maPhieu = $modelPNK->getNextMaPhieu();
 
-    public function pnk_luuPhieu() {
-        $modelPNK = new PhieuNhapKho($this->db);
+    // Lấy tất cả thành phẩm
+    $allTP = $modelPNK->getAllThanhPham();
 
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('index.php?controller=phieu&action=pnk_index');
-        }
-
-        $maPhieu     = isset($_POST['maPhieu']) ? trim($_POST['maPhieu']) : '';
-        $maTP        = isset($_POST['maTP']) ? trim($_POST['maTP']) : '';
-        $tenTP       = isset($_POST['tenTP']) ? trim($_POST['tenTP']) : '';
-        $maKho       = isset($_POST['maKho']) ? trim($_POST['maKho']) : 'K002';
-        $soLuong     = isset($_POST['soLuong']) ? intval($_POST['soLuong']) : 0;
-        $maNguoiLap  = isset($_POST['maNguoiLap']) ? trim($_POST['maNguoiLap']) : 'ND004';
-        $ngayNhap    = date('Y-m-d');
-
-        if ($maPhieu == '' || $maTP == '' || $soLuong <= 0) {
-            $this->redirect('index.php?controller=phieu&action=pnk_taoPhieu&error=1');
-        }
-
-        $data = array(
-            'maPhieu'    => $maPhieu,
-            'maTP'       => $maTP,
-            'maKho'      => $maKho,
-            'soLuong'    => $soLuong,
-            'ngayNhap'   => $ngayNhap,
-            'maNguoiLap' => $maNguoiLap,
-            'trangThai'  => 'Đã nhập'
-        );
-
-        $ok = $modelPNK->create($data);
-
-        if ($ok) {
-            $this->redirect('index.php?controller=phieu&action=pnk_index&ok=1');
-        } else {
-            $this->redirect('index.php?controller=phieu&action=pnk_taoPhieu&error=2');
+    // Lọc ra những TP chưa lập phiếu
+    $dsThanhPham = array();
+    if (!empty($allTP)) {
+        foreach ($allTP as $tp) {
+            if (!$modelPNK->checkExistTP($tp['maTP'])) {
+                $dsThanhPham[] = $tp;
+            }
         }
     }
+
+    // Lấy tất cả kho
+    $dsKho = $modelPNK->getAllKho();
+
+    // Lấy thông tin user hiện tại
+    $nguoiLap = '--';
+    $maNguoiLap = '';
+    if (!empty($_SESSION['user'])) {
+        $nguoiLap   = htmlspecialchars($_SESSION['user']['hoTen']);
+        $maNguoiLap = htmlspecialchars($_SESSION['user']['maNguoiDung']);
+    }
+
+    include 'app/views/phieu/PhieuNhapKho.php';
+}
+
+public function pnk_luuPhieu() {
+    $modelPNK = new PhieuNhapKho($this->db);
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        $this->redirect('index.php?controller=phieu&action=pnk_index');
+    }
+
+    $maPhieu = isset($_POST['maPhieu']) ? trim($_POST['maPhieu']) : '';
+    $maTP    = isset($_POST['maTP']) ? trim($_POST['maTP']) : '';
+    $maKho   = isset($_POST['maKho']) ? trim($_POST['maKho']) : 'K002';
+    $soLuong = isset($_POST['soLuong']) ? intval($_POST['soLuong']) : 0;
+
+    // Lấy thông tin user hiện tại
+    if (!empty($_SESSION['user'])) {
+        $maNguoiLap = $_SESSION['user']['maNguoiDung'];
+    } else {
+        $maNguoiLap = 'ND004';
+    }
+
+    $ngayNhap = date('Y-m-d');
+
+    if ($maPhieu == '' || $maTP == '' || $soLuong <= 0) {
+        $this->redirect('index.php?controller=phieu&action=pnk_taoPhieu&error=1');
+    }
+
+    // Kiểm tra 1 thành phẩm chỉ lập 1 phiếu
+    if ($modelPNK->checkExistTP($maTP)) {
+        $this->redirect('index.php?controller=phieu&action=pnk_taoPhieu&error=3');
+    }
+
+    $data = array(
+        'maPhieu'    => $maPhieu,
+        'maTP'       => $maTP,
+        'maKho'      => $maKho,
+        'soLuong'    => $soLuong,
+        'ngayNhap'   => $ngayNhap,
+        'maNguoiLap' => $maNguoiLap,
+        'trangThai'  => 'Đã nhập'
+    );
+
+    $ok = $modelPNK->create($data);
+
+    if ($ok) {
+        $this->redirect('index.php?controller=phieu&action=pnk_index&ok=1');
+    } else {
+        $this->redirect('index.php?controller=phieu&action=pnk_taoPhieu&error=2');
+    }
+}
+
+
 }

@@ -1,90 +1,111 @@
 <?php
+session_start();
 require_once dirname(__FILE__) . '/../models/PhieuXuatKhoTP.php';
 
 class phieuNhapXuatController {
 
-    // Xử lý lưu phiếu
-public function luuphieu() {
-    $px = new PhieuXuatKhoTP();
-
-    if (!isset($_POST['maDonHang']) || $_POST['maDonHang'] == '') {
-        header('Location: index.php?controller=phieuNhapXuat&action=xuatkhotp&error=1');
-        exit;
-    }
-
-    $maDonHang = $_POST['maDonHang'];
-
-    // Kiểm tra đơn hàng đã lập phiếu chưa
-    if ($px->checkExistDonHang($maDonHang)) {
-        header('Location: index.php?controller=phieuNhapXuat&action=xuatkhotp&error=5&maDonHang='.$maDonHang);
-        exit;
-    }
-
-    // -----------------------------
-    // Lấy thông tin từ đơn hàng
-    $donHang = $px->getDonHang($maDonHang);
-    if (!$donHang) {
-        header('Location: index.php?controller=phieuNhapXuat&action=xuatkhotp&error=3');
-        exit;
-    }
-
-    // Gán dữ liệu từ DonHang
-    $data['maTP']   = $donHang['maTP'];
-    $data['tenTP']  = $donHang['tenSP'];  // dùng để hiển thị
-    $data['soLuong'] = $_POST['soLuong']; // hoặc $donHang['soLuong'] nếu muốn xuất hết
-    $data['maPhieu'] = $_POST['maPhieu'];
-    $data['maKho'] = 'K002'; // Kho thành phẩm mặc định
-    $data['ngayXuat']= $_POST['ngayXuat'];
-    $data['maNguoiLap'] = $_POST['maNguoiLap'];
-    $data['maDonHang']  = $maDonHang;
-    // -----------------------------
-
-    // Kiểm tra số lượng
-    if ($donHang['soLuong'] < $data['soLuong']) {
-        header('Location: index.php?controller=phieuNhapXuat&action=xuatkhotp&error=4&tenSP='.$donHang['tenSP']);
-        exit;
-    }
-
-    // Lưu phiếu
-    $px->create($data);
-
-    // Cập nhật tồn kho
-    $px->updateSoLuongTP($data['maTP'], $data['soLuong']);
-
-    header('Location: index.php?controller=phieuNhapXuat&action=xuatkhotp&success=1');
-}
-
-
-
-    // Hiển thị form lập phiếu
+    // ==========================
+    //  HIỂN THỊ FORM LẬP PHIẾU
+    // ==========================
     public function taophieu() {
-        // Handle POST requests BEFORE any view is included
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->luuphieu();
-            return; // Never reach here if luuphieu() processes the request
-        }
 
         $px = new PhieuXuatKhoTP();
 
-        // Lấy danh sách đơn hàng kèm tên thành phẩm
+        // Lấy danh sách đơn hàng còn tồn để xuất
         $dsDonHang = $px->getAllDonHangWithTP();
 
-        // Sinh mã phiếu mới
+        // Tạo mã phiếu tự động
         $maPhieu = $px->getNextMaPhieu();
 
-        // Lấy ngày hiện tại
-        $ngayXuat = date('Y-m-d');
+        // Ngày lập phiếu (định dạng d-m-Y hiển thị đẹp hơn)
+        $ngayXuat = date('d-m-Y');
 
-        // Người lập (có thể hardcode hoặc lấy từ session)
-        $maNguoiLap = 'ND004';
+        // Lấy mã người lập (mặc định ND000)
+        $maNguoiLap = isset($_SESSION['user']['maNguoiDung'])
+            ? $_SESSION['user']['maNguoiDung']
+            : 'ND000';
 
-        // Gọi view (only for GET requests)
         require_once dirname(__FILE__) . '/../views/phieu/PhieuXuatKhoForm.php';
     }
 
-    // Hiển thị danh sách phiếu xuất (alias)
+
+    // ======================
+    //   XỬ LÝ LƯU PHIẾU
+    // ======================
+    public function luuphieu() {
+
+        $px = new PhieuXuatKhoTP();
+
+        // BẮT LỖI ĐƠN HÀNG TRỐNG
+        if (empty($_POST['maDonHang'])) {
+            header("Location: index.php?controller=phieuNhapXuat&action=taophieu&error=1");
+            exit;
+        }
+
+        $maDonHang = $_POST['maDonHang'];
+
+        // ĐƠN HÀNG ĐÃ LẬP PHIẾU CHƯA?
+        if ($px->checkExistDonHang($maDonHang)) {
+            header("Location: index.php?controller=phieuNhapXuat&action=taophieu&error=5&maDonHang=".$maDonHang);
+            exit;
+        }
+
+        // LẤY THÔNG TIN ĐƠN HÀNG
+        $donHang = $px->getDonHang($maDonHang);
+
+        if (!$donHang) {
+            header("Location: index.php?controller=phieuNhapXuat&action=taophieu&error=3");
+            exit;
+        }
+
+        // KIỂM TRA SỐ LƯỢNG
+        $soLuong = isset($_POST['soLuong']) ? (int)$_POST['soLuong'] : 0;
+
+        if ($soLuong <= 0) {
+            header("Location: index.php?controller=phieuNhapXuat&action=taophieu&error=4&tenSP={$donHang['tenSP']}");
+            exit;
+        }
+
+        if ($soLuong > $donHang['soLuong']) {
+            header("Location: index.php?controller=phieuNhapXuat&action=taophieu&error=4&tenSP={$donHang['tenSP']}");
+            exit;
+        }
+
+        // NGÀY XUẤT đưa về dạng Y-m-d trước khi lưu DB
+        $ngayXuat = date('Y-m-d', strtotime($_POST['ngayXuat']));
+
+        // DỮ LIỆU LƯU PHIẾU
+        $data = array(
+            'maPhieu'     => $_POST['maPhieu'],
+            'maKho'       => 'K002',
+            'ngayXuat'    => $ngayXuat,
+            'maNguoiLap'  => isset($_SESSION['user']['maNguoiDung']) 
+                                ? $_SESSION['user']['maNguoiDung'] 
+                                : 'ND000',
+            'maDonHang'   => $maDonHang,
+            'maTP'        => $donHang['maTP'],
+            'soLuong'     => $soLuong
+        );
+
+        // LƯU PHIẾU
+        $px->create($data);
+
+        // CẬP NHẬT TỒN KHO
+        $px->updateSoLuongTP($data['maTP'], $soLuong);
+
+        // CHUYỂN VỀ DANH SÁCH
+        header("Location: index.php?controller=phieuNhapXuat&action=xuatkhotp&ok=1");
+        exit;
+    }
+
+
+    // ===============================
+    //   DANH SÁCH PHIẾU XUẤT KHO
+    // ===============================
     public function xuatkhotp() {
-        $this->taophieu();
+        $px = new PhieuXuatKhoTP();
+        $dsPhieu = $px->getAll();
+        require_once dirname(__FILE__) . '/../views/phieu/phieuXuatKhoTP.php';
     }
 }
 ?>
