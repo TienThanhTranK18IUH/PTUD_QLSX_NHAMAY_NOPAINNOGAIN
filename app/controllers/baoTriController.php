@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1); 
 require_once dirname(__FILE__) . '/../../config/config.php';
 require_once dirname(__FILE__) . '/../models/Database.php';
 require_once dirname(__FILE__) . '/../models/phieuGhiNhanSuaChua.php';
@@ -21,12 +21,14 @@ class BaoTriController {
             $ngayHoanThanh = isset($_POST['ngayHoanThanh']) ? $_POST['ngayHoanThanh'] : '';
             $trangThai     = isset($_POST['trangThai']) ? $_POST['trangThai'] : '';
             $noiDung       = isset($_POST['noiDung']) ? $_POST['noiDung'] : '';
+            $maThietBi     = isset($_POST['maThietBi']) ? $_POST['maThietBi'] : '';
+            $tenThietBi    = isset($_POST['tenThietBi']) ? $_POST['tenThietBi'] : '';
             // TODO: lấy mã người dùng từ session nếu có
             $maNguoiDung   = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'ND006';
 
             if ($maPhieu == '') {
                 // Thêm mới phiếu ghi nhận (nếu người dùng bấm Ghi nhận từ phiếu yêu cầu)
-                $ok = $this->model->themPhieu($maPhieuYCSC, $ngayHoanThanh, $noiDung, $maNguoiDung, $trangThai);
+                $ok = $this->model->themPhieu($maPhieuYCSC, $ngayHoanThanh, $noiDung, $maNguoiDung, $trangThai, $maThietBi, $tenThietBi);
             } else {
                 // Cập nhật phiếu đã có
                 $ok = $this->model->capNhatPhieu($maPhieu, $ngayHoanThanh, $trangThai, $noiDung);
@@ -60,6 +62,17 @@ class BaoTriController {
         // Lấy dữ liệu hiển thị: tách 2 danh sách
         $dsYeuCau  = $this->model->layTatCaYeuCau();         // danh sách từ PhieuYeuCauSuaChua
         $dsGhiNhan = $this->model->layTatCaPhieuGhiNhan();   // danh sách từ PhieuGhiNhanSuaChua
+
+        // Nếu đang tạo mới (bấm Ghi nhận từ phiếu yêu cầu) -> cố gắng lấy thông tin thiết bị
+        if ($phieuEdit && !empty($phieuEdit['maPhieuYCSC']) && (!isset($phieuEdit['maThietBi']) || $phieuEdit['maThietBi'] == '')) {
+            foreach ($dsYeuCau as $r) {
+                if ($r['maPhieu'] == $phieuEdit['maPhieuYCSC']) {
+                    $phieuEdit['maThietBi'] = isset($r['maTB']) ? $r['maTB'] : '';
+                    $phieuEdit['tenThietBi'] = isset($r['tenTB']) ? $r['tenTB'] : '';
+                    break;
+                }
+            }
+        }
 
         // Gọi view
         include dirname(__FILE__) . '/../views/phieu/ghinhansuachua.php';

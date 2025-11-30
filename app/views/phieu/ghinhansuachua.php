@@ -1,5 +1,8 @@
+<?php declare(strict_types=1); 
+// View: ghinhansuachua.php (PHP 5.2 compatible)
+?>
 <div class="content">
-    <h2>🔧 Quản lý phiếu sửa chữa thiết bị</h2>
+    <h2>🔧 Phiếu ghi nhận sửa chữa thiết bị</h2>
 
     <div style="display:flex; gap:20px;">
         <!-- DANH SÁCH PHIẾU YÊU CẦU -->
@@ -61,7 +64,7 @@
                         <td><?php echo htmlspecialchars($r['maPhieuYCSC']); ?></td>
                         <td><?php echo htmlspecialchars($r['noiDung']); ?></td>
                         <td><?php echo htmlspecialchars($r['ngayHoanThanh']); ?></td>
-                        <td><?php echo htmlspecialchars($r['maNguoiDung']); ?></td>
+                        <td><?php echo htmlspecialchars(isset($r['maNguoiDung']) ? $r['maNguoiDung'] . ' - ' . (isset($r['hoTenNguoiDung']) ? $r['hoTenNguoiDung'] : '') : ''); ?></td>
                         <td><?php echo htmlspecialchars($r['trangThai']); ?></td>
                     </tr>
                     <?php }
@@ -82,6 +85,8 @@
     <form method="post" action="index.php?controller=baotri&action=index" class="form-edit" style="max-width:640px;">
         <input type="hidden" name="maPhieu" value="" />
         <input type="hidden" name="maPhieuYCSC" value="<?php echo htmlspecialchars($_GET['maPhieuYCSC']); ?>" />
+        <input type="hidden" name="maThietBi" value="<?php echo htmlspecialchars(isset($phieuEdit['maThietBi']) ? $phieuEdit['maThietBi'] : ''); ?>" />
+        <input type="hidden" name="tenThietBi" value="<?php echo htmlspecialchars(isset($phieuEdit['tenThietBi']) ? $phieuEdit['tenThietBi'] : ''); ?>" />
 
         <p>
             <label><b>Ngày hoàn thành:</b></label><br />

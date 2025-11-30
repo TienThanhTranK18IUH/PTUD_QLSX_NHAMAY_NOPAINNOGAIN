@@ -1,4 +1,15 @@
 <?php declare(strict_types=1); 
+// Ensure we have a $user array available in the view. Prefer a passed-in $user,
+// otherwise try helper `getCurrentUser()` or fallback to session data (PHP 5.2 safe).
+if (!isset($user)) {
+  if (function_exists('getCurrentUser')) {
+    $tmpUser = getCurrentUser();
+    $user = $tmpUser ? $tmpUser : array('maNguoiDung' => '', 'hoTen' => '', 'vaiTro' => '');
+  } else {
+    if (session_id() === '') @session_start();
+    $user = isset($_SESSION['user']) ? $_SESSION['user'] : array('maNguoiDung' => '', 'hoTen' => '', 'vaiTro' => '');
+  }
+}
 // View: PhanCongSanXuat.php — không BOM/ khoảng trắng trước thẻ PHP
 ?>
 
@@ -35,18 +46,11 @@ if (isset($_GET['msg'])) {
         <!-- 🧍 NGƯỜI DÙNG: tự lấy từ DB (vai trò QuanLy) — không cho nhập/chọn -->
         <div class="form-group">
           <label><strong>Người dùng</strong></label>
-          <?php if (isset($quanLy) && $quanLy): ?>
-            <input type="hidden" name="maNguoiDung"
-                   value="<?php echo htmlspecialchars($quanLy['maNguoiDung']); ?>">
-            <input type="text" class="form-control" readonly
-                   value="<?php
-                     echo htmlspecialchars(
-                       $quanLy['maNguoiDung'].' - '.$quanLy['hoTen'].
-                       ' ('.$quanLy['vaiTro'].($quanLy['tenXuong'] ? ' - '.$quanLy['tenXuong'] : '').')'
-                     );
-                   ?>">
+          <?php if (isset($user) && !empty($user['maNguoiDung'])): ?>
+            <input type="hidden" name="maNguoiDung" value="<?php echo htmlspecialchars($user['maNguoiDung']); ?>">
+            <input type="text" class="form-control" readonly value="<?php echo htmlspecialchars($user['maNguoiDung'].' - '.(isset($user['hoTen']) ? $user['hoTen'] : '')); ?>">
           <?php else: ?>
-            <input type="text" class="form-control" readonly value="(Không tìm thấy Quản lý hoạt động)">
+            <input type="text" class="form-control" readonly value="(Không tìm thấy người dùng đăng nhập)">
           <?php endif; ?>
         </div>
 

@@ -1,4 +1,16 @@
-<?php declare(strict_types=1);?>
+<?php declare(strict_types=1); 
+// Ensure we have a $user array available in the view. Prefer a passed-in $user,
+// otherwise try helper `getCurrentUser()` or fallback to session data.
+if (!isset($user)) {
+    if (function_exists('getCurrentUser')) {
+        $tmpUser = getCurrentUser();
+        $user = $tmpUser ? $tmpUser : array('maNguoiDung' => '', 'hoTen' => '');
+    } else {
+        if (session_id() === '') @session_start();
+        $user = isset($_SESSION['user']) ? $_SESSION['user'] : array('maNguoiDung' => '', 'hoTen' => '');
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -6,7 +18,7 @@
 <title>Lập phiếu nhập kho</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-body { font-family: Arial, sans-serif; background: #ecf0f1; margin: 0; padding: 0; }
+body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: #ecf0f1; margin: 0; padding: 0; }
 .content-wrapper { max-width: 900px; margin: 30px auto; background: #f4f6f9; border-radius: 10px; padding: 25px; }
 .page-header h2 { font-weight: 700; color: #34495e; margin-bottom: 5px; }
 .subtitle { color: #7f8c8d; margin-bottom: 20px; }
@@ -20,6 +32,16 @@ body { font-family: Arial, sans-serif; background: #ecf0f1; margin: 0; padding: 
 .btn-secondary { background: #95a5a6; color: #fff; }
 .btn-secondary:hover { background: #7f8c8d; }
 .form-actions { text-align: center; margin-top: 20px; }
+.btn.btn-primary {
+    background-color: #28a745 !important; /* xanh lá */
+    border-color: #28a745 !important;
+}
+
+.btn.btn-secondary {
+    background-color: #dc3545 !important; /* đỏ */
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}
 </style>
 </head>
 <body>
@@ -42,8 +64,8 @@ body { font-family: Arial, sans-serif; background: #ecf0f1; margin: 0; padding: 
             </div>
             <div class="form-group">
                 <label><strong>Nhân viên lập phiếu</strong></label>
-                <input type="hidden" name="maNguoiLap" value="ND004">
-                <input type="text" class="form-control" value="ND004 - Phạm Quốc Kho" readonly>
+                <input type="hidden" name="maNguoiLap" value="<?php echo htmlspecialchars(isset($user['maNguoiDung']) ? $user['maNguoiDung'] : ''); ?>">
+                <input type="text" class="form-control" value="<?php echo htmlspecialchars((isset($user['maNguoiDung']) ? $user['maNguoiDung'] . ' - ' : '') . (isset($user['hoTen']) ? $user['hoTen'] : '')); ?>" readonly>
             </div>
             <div class="form-group">
                 <label><strong>Trạng thái</strong></label>

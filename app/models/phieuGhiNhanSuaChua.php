@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1); 
 require_once dirname(__FILE__) . '/../../config/config.php';
 require_once dirname(__FILE__) . '/Database.php';
 
@@ -25,10 +25,12 @@ class PhieuGhiNhanSuaChua {
     // 2️⃣ Lấy danh sách phiếu ghi nhận sửa chữa
     public function layTatCaPhieuGhiNhan() {
         $sql = "
-            SELECT maPhieu, maPhieuYCSC, noiDung, ngayHoanThanh, 
-                   maNguoiDung, trangThai
-            FROM PhieuGhiNhanSuaChua
-            ORDER BY maPhieu DESC
+            SELECT p.maPhieu, p.maPhieuYCSC, p.noiDung, p.ngayHoanThanh,
+                   p.maNguoiDung, p.trangThai, p.maThietBi, p.tenThietBi,
+                   u.hoTen AS hoTenNguoiDung
+            FROM PhieuGhiNhanSuaChua p
+            LEFT JOIN nguoidung u ON p.maNguoiDung = u.maNguoiDung
+            ORDER BY p.maPhieu DESC
         ";
         return $this->db->query($sql);
     }
@@ -46,16 +48,18 @@ class PhieuGhiNhanSuaChua {
     /* ========================== CẬP NHẬT / THÊM ========================== */
 
     // 4️⃣ Thêm phiếu mới (khi ghi nhận từ phiếu yêu cầu)
-    public function themPhieu($maPhieuYCSC, $ngayHoanThanh, $noiDung, $maNguoiDung, $trangThai) {
+    public function themPhieu($maPhieuYCSC, $ngayHoanThanh, $noiDung, $maNguoiDung, $trangThai, $maThietBi = '', $tenThietBi = '') {
         $maPhieuYCSC   = $this->db->conn->real_escape_string($maPhieuYCSC);
         $ngayHoanThanh = $this->db->conn->real_escape_string($ngayHoanThanh);
         $noiDung       = $this->db->conn->real_escape_string($noiDung);
         $maNguoiDung   = $this->db->conn->real_escape_string($maNguoiDung);
         $trangThai     = $this->db->conn->real_escape_string($trangThai);
+        $maThietBi     = $this->db->conn->real_escape_string($maThietBi);
+        $tenThietBi    = $this->db->conn->real_escape_string($tenThietBi);
 
         $sql = "
-            INSERT INTO PhieuGhiNhanSuaChua (maPhieuYCSC, noiDung, ngayHoanThanh, trangThai, maNguoiDung)
-            VALUES ('$maPhieuYCSC', '$noiDung', '$ngayHoanThanh', '$trangThai', '$maNguoiDung')
+            INSERT INTO PhieuGhiNhanSuaChua (maPhieuYCSC, maThietBi, tenThietBi, noiDung, ngayHoanThanh, trangThai, maNguoiDung)
+            VALUES ('$maPhieuYCSC', '$maThietBi', '$tenThietBi', '$noiDung', '$ngayHoanThanh', '$trangThai', '$maNguoiDung')
         ";
         return $this->db->conn->query($sql);
     }
