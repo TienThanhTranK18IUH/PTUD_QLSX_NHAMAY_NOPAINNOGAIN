@@ -15,6 +15,7 @@
                 <th>Mã NL</th>
                 <th>Tên nguyên liệu</th> <!-- 🆕 Cột mới -->
                 <th>SL Nguyên liệu</th>
+                <th>người lập</th>
             </tr>
         </thead>
         <tbody>
@@ -33,6 +34,7 @@
                 echo '<td>' . $kh['maNguyenLieu'] . '</td>';
                 echo '<td>' . $kh['tenNguyenLieu'] . '</td>'; // 🆕 Cột mới
                 echo '<td align="center">' . $kh['soLuongNguyenLieu'] . '</td>';
+                echo '<td>' . $kh['nguoiLap'] . '</td>';
                 echo '</tr>';
             }
         } else {

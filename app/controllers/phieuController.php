@@ -135,19 +135,26 @@ class PhieuController {
 
     /* ================== PHIẾU KIỂM TRA THÀNH PHẨM ================== */
     public function kttp() {
+        if (session_id() === '') session_start();
         $thanhPhams = $this->modelKTTP->getThanhPhamChoKiemTra();
         $maPhieu    = $this->modelKTTP->getNextMaPhieu();
-
+        $hoTenQC = $_SESSION['user']['hoTen'];
+        $nguoiQC = $_SESSION['user']['maNguoiDung'];
         include 'app/views/phieu/kiemtra_TP.php';
     }
 
     public function create_kttp() {
+         // Kiểm tra đăng nhập
+    if (!isset($_SESSION['user'])) {
+        header("Location: index.php?controller=auth&action=login");
+        exit;
+    }
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('index.php?controller=phieu&action=kttp');
             return;
         }
 
-        $maQC = 'ND005';
+        $maQC = $_SESSION['user']['maNguoiDung'];
         $data = array(
             'maPhieu'      => isset($_POST['maPhieu']) ? trim($_POST['maPhieu']) : '',
             'maTP'         => isset($_POST['maTP']) ? trim($_POST['maTP']) : '',

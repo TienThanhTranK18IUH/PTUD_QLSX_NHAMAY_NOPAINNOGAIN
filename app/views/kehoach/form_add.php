@@ -71,6 +71,9 @@
 
             <label style="font-weight:bold;">Trạng thái</label>
             <input type="text" name="trangThai" value="Chưa bắt đầu" readonly style="width:100%; padding:5px; margin-bottom:10px;">
+            
+            <label style="font-weight:bold;">Người lập</label>
+            <input type="text" name="nguoiLap" value="<?php echo isset($_SESSION['user']['hoTen']) ? $_SESSION['user']['hoTen'] : ''; ?>" readonly style="width:100%; padding:5px; margin-bottom:10px;">
         </div>
 
         <!-- Cột 2: Nguyên liệu -->
@@ -90,6 +93,7 @@
                     <input type="number" name="soLuongNguyenLieu[]" min="1" placeholder="SL" required style="flex:0.7; padding:5px;">
                 </div>
             </div>
+            
             <!-- <button type="button" id="addNL" style="padding:5px 10px; background:#3498db; color:white; border:none; border-radius:5px; cursor:pointer;">+ Thêm nguyên liệu</button> -->
         </div>
 

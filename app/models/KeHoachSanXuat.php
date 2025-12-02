@@ -101,6 +101,7 @@ public function updateKeHoach($maKH, $data) {
     $soLuongNguyenLieu = intval($data['soLuongNguyenLieu']);
     $trangThai = mysqli_real_escape_string($conn, $data['trangThai']);
     $maKH = mysqli_real_escape_string($conn, $maKH);
+    $nguoiLap = mysqli_real_escape_string($conn, $data['nguoiLap']);
 
     // Tạo câu lệnh UPDATE
     $sql = "UPDATE kehoachsanxuat SET 
@@ -112,7 +113,8 @@ public function updateKeHoach($maKH, $data) {
                 maNguyenLieu='$maNguyenLieu',
                 tenNguyenLieu='$tenNguyenLieu',
                 soLuongNguyenLieu=$soLuongNguyenLieu,
-                trangThai='$trangThai'
+                trangThai='$trangThai',
+                nguoiLap='$nguoiLap'
             WHERE maKeHoach='$maKH'";
 
     // Thực hiện câu lệnh
@@ -162,6 +164,7 @@ public function createPlan($data) {
     $ngayKetThuc = mysqli_real_escape_string($conn, $data['ngayKetThuc']);
     $tongSoLuong = (int)$data['tongSoLuong'];
     $trangThai   = mysqli_real_escape_string($conn, $data['trangThai']);
+    $nguoiLap   = mysqli_real_escape_string($conn, $data['nguoiLap']);
 
     // --- Kiểm tra mảng nguyên liệu ---
     $maNLs  = $data['maNguyenLieu'];
@@ -176,10 +179,10 @@ public function createPlan($data) {
 
         $sql = "INSERT INTO kehoachsanxuat (
                     maKeHoach, maDonHang, maXuong, ngayBatDau, ngayKetThuc,
-                    tongSoLuong, trangThai, maNguyenLieu, tenNguyenLieu, soLuongNguyenLieu
+                    tongSoLuong, trangThai, maNguyenLieu, tenNguyenLieu, soLuongNguyenLieu,nguoiLap
                 ) VALUES (
                     '$maKeHoach', '$maDonHang', '$maXuong', '$ngayBatDau', '$ngayKetThuc',
-                    $tongSoLuong, '$trangThai', '$maNL', '$tenNL', $soLuongNL
+                    $tongSoLuong, '$trangThai', '$maNL', '$tenNL', $soLuongNL,'$nguoiLap'
                 )";
         mysqli_query($conn, $sql);
     }

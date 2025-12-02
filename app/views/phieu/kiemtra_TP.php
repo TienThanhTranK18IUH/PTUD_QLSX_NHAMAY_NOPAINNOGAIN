@@ -1,103 +1,96 @@
-<div style="
-    display:flex;
-    justify-content:center;
-    padding-top:20px;
-">
-    <div style="
-        width:600px;
-        background:white;
-        padding:25px;
-        border-radius:12px;
-        box-shadow:0 4px 12px rgba(0,0,0,0.1);
-    ">
-        
-        <h2 style="margin-bottom:18px;text-align:center;color:#1e293b;">
-            🧮 Lập phiếu kiểm tra thành phẩm
+<div style="display:flex;justify-content:center;padding:20px;background:#f1f5f9;">
+    <div style="width:750px;background:white;padding:25px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+
+        <h2 style="text-align:center;margin-bottom:25px;color:#1e293b;border-bottom:1px solid #cbd5e1;padding-bottom:10px;">
+            PHIẾU KIỂM TRA THÀNH PHẨM
         </h2>
 
         <?php if (isset($_GET['success'])): ?>
-        <div style="background:#d4edda;color:#155724;padding:10px;border-radius:8px;margin-bottom:12px;text-align:center;">
-            ✅ Lưu phiếu kiểm tra thành công!
-        </div>
+            <div style="background:#d4edda;color:#155724;padding:10px;border-radius:8px;margin-bottom:12px;text-align:center;">
+                ✅ Lưu phiếu kiểm tra thành công!
+            </div>
         <?php elseif (isset($_GET['error'])): ?>
-        <div style="background:#f8d7da;color:#721c24;padding:10px;border-radius:8px;margin-bottom:12px;text-align:center;">
-            ❌ Có lỗi khi lưu phiếu. Vui lòng kiểm tra lại.
-        </div>
+            <div style="background:#f8d7da;color:#721c24;padding:10px;border-radius:8px;margin-bottom:12px;text-align:center;">
+                ❌ Có lỗi khi lưu phiếu. Vui lòng kiểm tra lại.
+            </div>
         <?php endif; ?>
 
         <form action="index.php?controller=phieu&action=create_kttp" method="post">
 
             <!-- Mã phiếu -->
-            <div style="margin-bottom:12px;">
-                <label><strong>Mã phiếu</strong></label>
-                <input type="text" name="maPhieu" 
-                    value="<?php echo htmlspecialchars($maPhieu); ?>" readonly
-                    style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;">
+            <div style="display:flex;align-items:center;margin-bottom:15px;">
+                <label style="width:160px;">MÃ PHIẾU</label>
+                <input type="text" name="maPhieu" value="<?php echo htmlspecialchars($maPhieu); ?>" readonly
+                    style="flex:1;padding:8px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;">
             </div>
 
             <!-- Thành phẩm -->
-            <div style="margin-bottom:12px;">
-                <label><strong>Thành phẩm</strong></label>
+            <div style="display:flex;align-items:center;margin-bottom:15px;">
+                <label style="width:160px;">THÀNH PHẨM</label>
                 <select name="maTP" id="maTP" required
-                    style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;">
+                    style="flex:1;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
                     <option value="">-- Chọn thành phẩm --</option>
                     <?php foreach ($thanhPhams as $tp): ?>
-                    <option value="<?php echo $tp['maTP']; ?>">
-                        <?php echo htmlspecialchars($tp['tenTP']); ?>
-                    </option>
+                        <option value="<?php echo $tp['maTP']; ?>">
+                            <?php echo htmlspecialchars($tp['tenTP']); ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
             </div>
 
-            <!-- SL kiểm tra -->
-            <div style="margin-bottom:12px;">
-                <label><strong>Số lượng kiểm tra</strong></label>
+            <!-- Số lượng kiểm tra & đạt chuẩn & % -->
+            <div style="display:flex;align-items:center;margin-bottom:15px; gap:10px;">
+                <label style="width:120px;">SL KIỂM TRA</label>
                 <input type="number" id="SL_KiemTra" name="SL_KiemTra" readonly
-                    style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;">
-            </div>
-
-            <!-- SL đạt chuẩn -->
-            <div style="margin-bottom:12px;">
-                <label><strong>Số lượng đạt chuẩn</strong></label>
+                    style="width:100px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;text-align:center;">
+                
+                <label style="width:120px;">SL ĐẠT CHUẨN</label>
                 <input type="number" id="SL_DatChuan" name="SL_DatChuan" required
-                    style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;">
+                    style="width:100px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;text-align:center;">
+
+                <label style="width:60px;">Tỉ lệ</label>
+                <input type="text" id="percentDat" readonly
+                    style="width:80px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;background:#f1f5f9;text-align:center;">
             </div>
 
-            <!-- Kết quả kiểm tra (badge) -->
-            <div style="margin-bottom:15px;">
-                <label><strong>Kết quả kiểm tra</strong></label><br>
-                <span id="ketQuaBadge"
-                    style="display:inline-block;margin-top:6px;padding:8px 14px;border-radius:20px;
-                    background:#e2e8f0;color:#1e293b;font-weight:bold;">
-                    Chưa xác định
-                </span>
 
-                <input type="hidden" name="ketQua" id="ketQuaInput" value="Đạt">
+            <!-- Kết quả kiểm tra -->
+            <div style="display:flex;align-items:center;margin-bottom:15px;">
+                <label style="width:160px;">KẾT QUẢ KIỂM TRA</label>
+                <div style="flex:1;">
+                    <span id="ketQuaBadge"
+                        style="display:inline-block;margin-left:15px;padding:5px 12px;border-radius:20px;
+                        background:#e2e8f0;color:#1e293b;font-weight:bold;">
+                        Chưa xác định
+                    </span>
+
+                    <input type="hidden" name="ketQua" id="ketQuaInput" value="">
+                </div>
             </div>
 
             <!-- Ngày lập -->
-            <div style="margin-bottom:12px;">
-                <label><strong>Ngày lập</strong></label>
+            <div style="display:flex;align-items:center;margin-bottom:15px;">
+                <label style="width:160px;">NGÀY LẬP</label>
                 <input type="date" name="ngayLap" value="<?php echo date('Y-m-d'); ?>" required
-                    style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;">
+                    style="flex:1;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
             </div>
 
             <!-- Nhân viên QC -->
-            <div style="margin-bottom:16px;">
-                <label><strong>Nhân viên QC</strong></label>
+            <div style="display:flex;align-items:center;margin-bottom:25px;">
+                <label style="width:160px;">NHÂN VIÊN QC</label>
                 <input type="text" value="<?php echo htmlspecialchars($hoTenQC.' ('.$nguoiQC.')'); ?>" readonly
-                    style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;background:#f1f5f9;">
+                    style="flex:1;padding:8px;border:1px solid #cbd5e1;border-radius:6px;background:#f1f5f9;">
             </div>
 
             <!-- Buttons -->
             <div style="text-align:center;">
                 <button type="submit"
                     style="background:#2563eb;color:white;padding:10px 18px;border:none;border-radius:6px;font-size:15px;">
-                    💾 Lưu phiếu
+                    💾 XÁC NHẬN LƯU PHIẾU
                 </button>
                 <a href="index.php?controller=dashboard"
                     style="margin-left:10px;background:#e5e7eb;color:#111;padding:10px 18px;border-radius:6px;text-decoration:none;">
-                    ⬅ Quay lại
+                    HỦY
                 </a>
             </div>
 
@@ -111,14 +104,17 @@ document.addEventListener('DOMContentLoaded', function() {
     var maTP = document.getElementById('maTP');
     var slKiemTra = document.getElementById('SL_KiemTra');
     var slDatChuan = document.getElementById('SL_DatChuan');
+    var percentDat = document.getElementById('percentDat');
     var badge = document.getElementById('ketQuaBadge');
     var ketQuaInput = document.getElementById('ketQuaInput');
+    var radios = document.querySelectorAll("input[name='chonKetQua']");
 
-    // Load số lượng kiểm tra
+    // Load SL kiểm tra từ server
     maTP.addEventListener('change', function() {
         var v = this.value;
         if (!v) {
             slKiemTra.value = '';
+            updateKetQua();
             return;
         }
 
@@ -128,13 +124,15 @@ document.addEventListener('DOMContentLoaded', function() {
         xhr.onload = function() {
             var m = xhr.responseText.match(/(\d+)/);
             slKiemTra.value = m ? parseInt(m[1], 10) : 0;
+            updateKetQua(); // tự cập nhật kết quả sau khi load
         };
         xhr.send('maTP=' + encodeURIComponent(v));
     });
 
-    // Tự đánh giá kết quả
-    slDatChuan.addEventListener('input', function() {
+    // Cập nhật kết quả khi nhập SL đạt chuẩn
+    slDatChuan.addEventListener('input', updateKetQua);
 
+    function updateKetQua() {
         var kt = parseInt(slKiemTra.value || '0', 10);
         var dc = parseInt(slDatChuan.value || '0', 10);
 
@@ -144,21 +142,48 @@ document.addEventListener('DOMContentLoaded', function() {
             dc = kt;
         }
 
-        if (kt === 0) return;
+        if (kt === 0) {
+            badge.innerText = "Chưa xác định";
+            badge.style.background = "#e2e8f0";
+            badge.style.color = "#1e293b";
+            ketQuaInput.value = "";
+            percentDat.value = "";
+            radios.forEach(r => r.checked = false);
+            return;
+        }
 
-        var percent = (dc / kt) * 100;
+        var percent = Math.round((dc / kt) * 100);
+        percentDat.value = percent + " %"; // cập nhật ô % đạt
 
         if (percent >= 90) {
-            badge.innerText = "Đạt";
+            setKetQua("Đạt");
+        } else {
+            setKetQua("Không đạt");
+        }
+    }
+
+    function setKetQua(val) {
+        ketQuaInput.value = val;
+        badge.innerText = val;
+        if (val === "Đạt") {
             badge.style.background = "#d1fae5";
             badge.style.color = "#065f46";
-            ketQuaInput.value = "Đạt";
         } else {
-            badge.innerText = "Không đạt";
             badge.style.background = "#fee2e2";
             badge.style.color = "#b91c1c";
-            ketQuaInput.value = "Không đạt";
         }
+
+        // Đồng bộ radio
+        var radio = document.querySelector("input[name='chonKetQua'][value='" + val + "']");
+        if (radio) radio.checked = true;
+    }
+
+    // Radio vẫn có thể chỉnh thủ công
+    radios.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            setKetQua(this.value);
+        });
     });
+
 });
 </script>
