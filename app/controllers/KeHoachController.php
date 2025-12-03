@@ -114,6 +114,13 @@ class KeHoachController {
         $success = '';
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            
+            // Kiểm tra số lần lập kế hoạch cho đơn hàng
+                $soLan = $khModel->countByOrder($_POST['maDonHang']);
+
+                if ($soLan >= 2) {
+                    $errors[] = "❌ Đơn hàng này đã được lập đủ 2 kế hoạch (Cắt may & Hoàn thiện). Không thể lập thêm.";
+                } 
             // Lấy tên người lập từ session
             $nguoiLap = isset($_SESSION['user']['hoTen']) ? $_SESSION['user']['hoTen'] : '';
 
@@ -130,23 +137,30 @@ class KeHoachController {
                 'nguoiLap' => $nguoiLap
             );
 
-            // Kiểm tra trùng
-            if ($this->model->checkDuplicatePlan($data)) {
-                $errors[] = "Kế hoạch cho đơn hàng này và xưởng này đã tồn tại!";
-            } else {
-                if ($this->model->createPlan($data)) {
-                    // ✅ Cập nhật trạng thái đơn hàng
-                    $this->model->updateOrderStatus($data['maDonHang'], 'Chưa bắt đầu');
-                    // Sau khi POST thành công, chuyển hướng (PRG) về trang danh sách
-                    header("Location: index.php?controller=kehoach&action=index");
-                    exit();
-                } else {
-                    $errors[] = "Không thể lưu kế hoạch.";
-                }
-            }
+    // Kiểm tra trùng
+    if ($this->model->checkDuplicatePlan($data)) {
+        $msg = urlencode("Kế hoạch cho đơn hàng này và xưởng này đã tồn tại!");
+    header("Location: index.php?controller=kehoach&action=lapKeHoach&msg=$msg&type=error");
+    exit();
+} else {
+    if ($this->model->createPlan($data)) {
+        $soLan = $this->model->countByOrder($data['maDonHang']);
+        if ($soLan == 1) {
+            $this->model->updateOrderStatus($data['maDonHang'], 'Đang lập kế hoạch');
         }
+        $msg = urlencode("Lập kế hoạch thành công!");
+        header("Location: index.php?controller=kehoach&action=lapKeHoach&msg=$msg&type=success");
+        exit();
+    } else {
+        $msg = urlencode("Không thể lưu kế hoạch.");
+        header("Location: index.php?controller=kehoach&action=lapKeHoach&msg=$msg&type=error");
+        exit();
+    }
+    }
+}
 
-        include dirname(__FILE__) . '/../views/kehoach/form_add.php';
+include dirname(__FILE__) . '/../views/kehoach/form_add.php';
+
     }
 }
 ?>

@@ -22,25 +22,32 @@ class DonHang {
         }
         return $data;
     }
+    // ✅ Lấy các đơn hàng có thể lập kế hoạch (0 hoặc 1 lần)
+public function getPendingOrders() {
+    $conn = $this->db->conn;
+    $sql = "
+        SELECT dh.maDonHang, dh.tenSP, dh.soLuong, dh.ngayGiao,
+               IFNULL(kh.soKH,0) AS soLanKeHoach
+        FROM donhang dh
+        LEFT JOIN (
+            SELECT maDonHang, COUNT(*) AS soKH
+            FROM kehoachsanxuat
+            GROUP BY maDonHang
+        ) kh ON dh.maDonHang = kh.maDonHang
+        WHERE IFNULL(kh.soKH,0) < 2
+        ORDER BY dh.ngayGiao ASC
+    ";
 
-    // ✅ Lấy các đơn hàng chưa có kế hoạch
-    public function getPendingOrders() {
-        $conn = $this->db->conn;
-        $sql = "SELECT dh.maDonHang, dh.tenSP, dh.soLuong, dh.ngayGiao 
-                FROM donhang dh
-                LEFT JOIN kehoachsanxuat kh ON dh.maDonHang = kh.maDonHang
-                WHERE kh.maDonHang IS NULL
-                ORDER BY dh.ngayGiao ASC";
-
-        $result = mysqli_query($conn, $sql);
-        $data = array();
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $data[] = $row;
-            }
+    $result = mysqli_query($conn, $sql);
+    $data = array();
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $data[] = $row;
         }
-        return $data;
     }
+    return $data;
+}
+
 
     // ✅ Cập nhật trạng thái đơn hàng (phiên bản cũ)
     public function updateTrangThaiDonHang($maDonHang, $trangThaiMoi) {

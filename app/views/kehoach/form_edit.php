@@ -1,5 +1,5 @@
-<div class="content">
-    <h2>📋 Danh sách Kế hoạch sản xuất</h2>
+:<div class="content" style="max-width:1200px; margin:auto; padding:20px; font-family:Arial, sans-serif; color:#2c3e50;">
+    <h2 style="text-align:center; margin-bottom:25px;">📋 Danh sách Kế hoạch sản xuất</h2>
 
     <?php
     if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['maKeHoach'])){
@@ -61,71 +61,71 @@
     }
     ?>
 
-    <table border="1" cellpadding="8" cellspacing="0" width="100%" style="border-collapse:collapse;">
-        <thead style="background-color:#f0f0f0;">
+    <table style="width:100%; border-collapse:collapse; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-radius:8px; overflow:hidden;">
+        <thead style="background:#f0f0f0; text-align:left;">
             <tr>
-                <th>Mã KH</th>
-                <th>Xưởng</th>
-                <th>Sản phẩm</th>
-                <th>Đơn hàng</th>
-                <th>Ngày bắt đầu</th>
-                <th>Ngày kết thúc</th>
-                <th>Tổng SL</th>
-                <th>Trạng thái</th>
-                <th>Mã NL</th>
-                <th>Tên nguyên liệu</th>
-                <th>SL Nguyên liệu</th>
-                <th>Thao tác</th>
+                <?php 
+$headers = array('Mã KH','Xưởng','Sản phẩm','Đơn hàng','Ngày bắt đầu','Ngày kết thúc','Tổng SL','Trạng thái','Mã NL','Tên NL','SL NL','Thao tác');
+                foreach($headers as $h){
+                    echo "<th style='padding:10px; border-bottom:1px solid #ddd;'>$h</th>";
+                }
+                ?>
             </tr>
         </thead>
         <tbody>
         <?php
         if(!empty($kehoachs)){
             foreach($kehoachs as $kh){
-                echo '<tr>';
-                echo '<td>'.$kh['maKeHoach'].'</td>';
-                echo '<td>'.$kh['tenXuong'].'</td>';
-                echo '<td>'.$kh['tenSP'].'</td>';
-                echo '<td>'.$kh['maDonHang'].'</td>';
-                echo '<td>'.$kh['ngayBatDau'].'</td>';
-                echo '<td>'.$kh['ngayKetThuc'].'</td>';
-                echo '<td align="center">'.$kh['tongSoLuong'].'</td>';
-                echo '<td>'.$kh['trangThai'].'</td>';
-                echo '<td>'.$kh['maNguyenLieu'].'</td>';
-                echo '<td>'.$kh['tenNguyenLieu'].'</td>';
-                echo '<td align="center">'.$kh['soLuongNguyenLieu'].'</td>';
-                echo '<td>
-                        <button onclick="toggleEditForm(\''.$kh['maKeHoach'].'\')">SỬA</button>
+                echo '<tr style="transition:background 0.2s;" onmouseover="this.style.background=\'#f9f9f9\'" onmouseout="this.style.background=\'\'">';
+                echo '<td style="padding:8px;">'.$kh['maKeHoach'].'</td>';
+                echo '<td style="padding:8px;">'.$kh['tenXuong'].'</td>';
+                echo '<td style="padding:8px;">'.$kh['tenSP'].'</td>';
+                echo '<td style="padding:8px;">'.$kh['maDonHang'].'</td>';
+                echo '<td style="padding:8px;">'.$kh['ngayBatDau'].'</td>';
+                echo '<td style="padding:8px;">'.$kh['ngayKetThuc'].'</td>';
+                echo '<td style="padding:8px; text-align:center;">'.$kh['tongSoLuong'].'</td>';
+                echo '<td style="padding:8px;">'.$kh['trangThai'].'</td>';
+                echo '<td style="padding:8px;">'.$kh['maNguyenLieu'].'</td>';
+                echo '<td style="padding:8px;">'.$kh['tenNguyenLieu'].'</td>';
+                echo '<td style="padding:8px; text-align:center;">'.$kh['soLuongNguyenLieu'].'</td>';
+                echo '<td style="padding:8px; text-align:center;">
+                        <button onclick="toggleEditForm(\''.$kh['maKeHoach'].'\')" style="padding:5px 10px; background:#3498db; color:#fff; border:none; border-radius:4px; cursor:pointer;">SỬA</button>
                       </td>';
                 echo '</tr>';
 
                 // Form chỉnh sửa
                 echo '<tr id="editForm_'.$kh['maKeHoach'].'" style="display:none; background:#fafafa;">
-                        <td colspan="12">
-                            <form method="post" action="" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; align-items:center; padding:10px; border:1px solid #ddd; border-radius:5px;">
+                        <td colspan="12" style="padding:10px;">
+                            <form method="post" action="" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; align-items:center; border:1px solid #ddd; padding:12px; border-radius:6px; background:#fff;">
                                 <input type="hidden" name="maKeHoach" value="'.$kh['maKeHoach'].'">
 
-                                <select name="maXuong">';
+                                <select name="maXuong" style="padding:6px; border-radius:4px; border:1px solid #ccc;display:none;">';
                                 foreach($xuongs as $x){
                                     $sel = $x['maXuong']==$kh['maXuong']?'selected':'';
                                     echo "<option value=\"{$x['maXuong']}\" $sel>{$x['tenXuong']}</option>";
                                 }
                 echo            '</select>
 
-                                <input type="text" name="tenSP" value="'.$kh['tenSP'].'" placeholder="Tên sản phẩm">
+                                <input type="text" name="tenSP" value="'.$kh['tenSP'].'" placeholder="Tên sản phẩm" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
 
-                                <select name="maDonHang">';
+                                <select name="maDonHang" style="padding:6px; border-radius:4px; border:1px solid #ccc;display:none;">';
                                 foreach($donhangs as $dh){
                                     $sel = $dh['maDonHang']==$kh['maDonHang']?'selected':'';
                                     echo "<option value=\"{$dh['maDonHang']}\" $sel>{$dh['maDonHang']}</option>";
                                 }
                 echo            '</select>
 
-                                <input type="date" name="ngayBatDau" value="'.$kh['ngayBatDau'].'">
-                                <input type="date" name="ngayKetThuc" value="'.$kh['ngayKetThuc'].'">
-                                <input type="number" name="tongSoLuong" value="'.$kh['tongSoLuong'].'" placeholder="Tổng SL">
+                                <input type="date" name="ngayBatDau" value="'.$kh['ngayBatDau'].'" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <input type="date" name="ngayKetThuc" value="'.$kh['ngayKetThuc'].'" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <input type="number" name="tongSoLuong" value="'.$kh['tongSoLuong'].'" placeholder="Tổng SL" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
 
-                                <select name="maNguyenLieu" onchange="this.nextElementSibling.value=this.options[this.selectedIndex].getAttribute(\'data-ten\')">
+                                <select name="trangThai" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                    <option '.($kh['trangThai']=='Chưa bắt đầu'?'selected':'').'>Chưa bắt đầu</option>
+                                    <option '.($kh['trangThai']=='Đang thực hiện'?'selected':'').'>Đang thực hiện</option>
+                                    <option '.($kh['trangThai']=='Hoàn thành'?'selected':'').'>Hoàn thành</option>
+                                    <option '.($kh['trangThai']=='Tạm dừng'?'selected':'').'>Tạm dừng</option>
+                                </select>
+                                <select name="maNguyenLieu" onchange="this.nextElementSibling.value=this.options[this.selectedIndex].getAttribute(\'data-ten\')" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
                                     <option value="">--Chọn Mã NL--</option>';
                                     foreach($nguyenlieus as $nl){
                                         $sel = $nl['maNguyenLieu']==$kh['maNguyenLieu']?'selected':'';
@@ -133,26 +133,21 @@
                                     }
                 echo                '</select>
 
-                                <input type="text" name="tenNguyenLieu" value="'.$kh['tenNguyenLieu'].'" placeholder="Tên NL" readonly>
-                                <input type="number" name="soLuongNguyenLieu" value="'.$kh['soLuongNguyenLieu'].'" placeholder="SL NL">
+                                <input type="text" name="tenNguyenLieu" value="'.$kh['tenNguyenLieu'].'" placeholder="Tên NL" readonly style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <input type="number" name="soLuongNguyenLieu" value="'.$kh['soLuongNguyenLieu'].'" placeholder="SL NL" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
 
-                                <select name="trangThai">
-                                    <option '.($kh['trangThai']=='Chưa bắt đầu'?'selected':'').'>Chưa bắt đầu</option>
-                                    <option '.($kh['trangThai']=='Đang thực hiện'?'selected':'').'>Đang thực hiện</option>
-                                    <option '.($kh['trangThai']=='Hoàn thành'?'selected':'').'>Hoàn thành</option>
-                                    <option '.($kh['trangThai']=='Tạm dừng'?'selected':'').'>Tạm dừng</option>
-                                </select>
+                                
 
-                                <div style="grid-column:span 4; text-align:right;">
-                                    <button type="submit" style="padding:5px 10px; background:#4CAF50; color:#fff; border:none; border-radius:4px;">💾 Lưu</button>
-                                    <button type="button" onclick="toggleEditForm(\''.$kh['maKeHoach'].'\')" style="padding:5px 10px; background:#f44336; color:#fff; border:none; border-radius:4px;">❌ Hủy</button>
+                                <div style="grid-column:span 4; text-align:right; margin-top:5px;">
+                                    <button type="submit" style="padding:6px 12px; background:#4CAF50; color:#fff; border:none; border-radius:4px; cursor:pointer;">💾 Lưu</button>
+                                    <button type="button" onclick="toggleEditForm(\''.$kh['maKeHoach'].'\')" style="padding:6px 12px; background:#f44336; color:#fff; border:none; border-radius:4px; cursor:pointer;">❌ Hủy</button>
                                 </div>
                             </form>
                         </td>
                       </tr>';
             }
         } else {
-            echo '<tr><td colspan="12" align="center">Không có dữ liệu kế hoạch</td></tr>';
+            echo '<tr><td colspan="12" style="text-align:center; padding:12px;">Không có dữ liệu kế hoạch</td></tr>';
         }
         ?>
         </tbody>

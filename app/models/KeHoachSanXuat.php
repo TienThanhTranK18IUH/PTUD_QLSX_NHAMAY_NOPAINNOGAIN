@@ -27,10 +27,12 @@ public function getConnection() {
                     kh.trangThai,
                     kh.maNguyenLieu,
                     kh.tenNguyenLieu,
-                    kh.soLuongNguyenLieu
+                    kh.soLuongNguyenLieu,
+                    kh.nguoiLap
                 FROM KeHoachSanXuat kh
                 JOIN Xuong x ON kh.maXuong = x.maXuong
-                JOIN DonHang dh ON kh.maDonHang = dh.maDonHang";
+                JOIN DonHang dh ON kh.maDonHang = dh.maDonHang
+                 ORDER BY kh.maDonHang asc";
 
 
         $result = mysqli_query($this->conn, $sql);
@@ -53,7 +55,13 @@ public function getAllXuongs() {
     }
     return $data;
 }
-
+public function countByOrder($maDonHang) {
+    $maDonHang = mysqli_real_escape_string($this->conn, $maDonHang);
+    $sql = "SELECT COUNT(*) AS total FROM kehoachsanxuat WHERE maDonHang = '$maDonHang'";
+    $result = mysqli_query($this->conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+    return intval($row['total']);
+}
 // Lấy tất cả sản phẩm
 public function getAllSanPhams() {
     $result = mysqli_query($this->conn, "SELECT maSP, tenSP FROM donhang");
@@ -133,12 +141,25 @@ public function updateKeHoach($maKH, $data) {
 
 // Lấy danh sách đơn hàng chưa lập kế hoạch
 public function getPendingOrders() {
-    $sql = "SELECT * FROM donhang WHERE maDonHang NOT IN (SELECT maDonHang FROM kehoachsanxuat)";
+    $sql = "
+        SELECT dh.*
+        FROM donhang dh
+        LEFT JOIN (
+            SELECT maDonHang, COUNT(*) AS soKH
+            FROM kehoachsanxuat
+            GROUP BY maDonHang
+        ) kh ON dh.maDonHang = kh.maDonHang
+        WHERE kh.soKH IS NULL OR kh.soKH < 2
+    ";
+
     $res = mysqli_query($this->conn, $sql);
-    $rows =array();
-    while($row = mysqli_fetch_assoc($res)) $rows[] = $row;
+    $rows = array();
+    while ($row = mysqli_fetch_assoc($res)) {
+        $rows[] = $row;
+    }
     return $rows;
 }
+
 public function generateMaKeHoach() {
     $conn = $this->conn;
     $sql = "SELECT maKeHoach FROM kehoachsanxuat ORDER BY maKeHoach DESC LIMIT 1";
