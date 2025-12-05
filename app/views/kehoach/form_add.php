@@ -116,7 +116,7 @@ $autoMaKH = $khModel->generateMaKeHoach(); // Tự sinh mã KH
     </div>
 
     <div style="text-align:center; margin-top:20px;">
-        <button type="submit" style="padding:12px 25px; background:#27ae60; color:white; border:none; border-radius:6px; cursor:pointer; font-size:16px;">Lập kế hoạch</button>
+        <button type="submit" style="padding:12px 25px; background:#27ae60; color:white; border:none; border-radius:6px; cursor:pointer; font-size:17px;">Lập kế hoạch</button>
     </div>
 </form>
 
