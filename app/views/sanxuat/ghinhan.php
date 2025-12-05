@@ -20,10 +20,9 @@ foreach ($CA_MAP as $ma => $pair) {
     </div>
 
     <div id="msgBox">
-      <?php if (isset($_SESSION['err'])): ?>
+      <?php if (isset($_SESSION['err']) && $_SESSION['err']): ?>
         <div class="alert alert-danger"><?php echo $_SESSION['err']; unset($_SESSION['err']); ?></div>
-      <?php endif; ?>
-      <?php if (!empty($notice_ok)): ?>
+      <?php elseif (!empty($notice_ok)): ?>
         <div class="alert alert-success">✅ Dữ liệu đã được lưu thành công!</div>
       <?php endif; ?>
     </div>

@@ -197,6 +197,15 @@ class PhieuYeuCau {
             }
         }
 
+        // 4b) Lấy mã nguyên liệu chính (nếu có) để lưu vào header nếu bảng có cột
+        $maNguyenLieu = '';
+        if ($kh && isset($kh['MaNguyenLieu']) && $kh['MaNguyenLieu']!=='') {
+            $maNguyenLieu = $this->safe($kh['MaNguyenLieu']);
+        } elseif (isset($data['item']) && is_array($data['item']) && count($data['item'])>0) {
+            $first = $data['item'][0];
+            if (isset($first['ma']) && trim($first['ma'])!=='') $maNguyenLieu = $this->safe(trim($first['ma']));
+        }
+
         // 5) Kiểm tra người lập
         if ($maNguoiLap!=='') {
             $u = $this->getUserByMa($maNguoiLap);
@@ -214,6 +223,7 @@ class PhieuYeuCau {
         // 6) Insert header
         $cols = array('maPhieu','maKeHoach','ghiChu','soLuong','maXuong','ngayLap','trangThai');
         $vals = array("'{$maPhieu}'","'{$maKH}'","'{$ghiChu}'",$tongSL,"'{$maXuong}'","'{$ngayLap}'","'ChoDuyet'");
+        if ($this->columnExists($this->TBL_HDR,'maNguyenLieu')) { $cols[]='maNguyenLieu'; $vals[]="'{$maNguyenLieu}'"; }
         if ($this->columnExists($this->TBL_HDR,'maNguoiLap')) { $cols[]='maNguoiLap'; $vals[]="'{$maNguoiLap}'"; }
         if ($this->columnExists($this->TBL_HDR,'nguoiLap'))   { $cols[]='nguoiLap';   $vals[]="'{$nguoiLap}'";   }
 

@@ -18,6 +18,11 @@ $thangLabel = date('m/Y', strtotime($d));
     <input type="hidden" name="tab" id="tab" value="<?php echo htmlspecialchars($tab); ?>"/>
 
     <label>Công nhân:</label>
+    <?php if (count($dsNV)===1 && isset($_SESSION['user']) && isset($_SESSION['user']['maNguoiDung']) && $_SESSION['user']['maNguoiDung']===$nv):
+            $r = $dsNV[0]; ?>
+      <span style="font-weight:600;"><?php echo htmlspecialchars($r['maNguoiDung'].' - '.(isset($r['hoTen'])?$r['hoTen']:'')); ?></span>
+      <input type="hidden" name="nv" id="nv" value="<?php echo htmlspecialchars($r['maNguoiDung']); ?>" />
+    <?php else: ?>
     <select name="nv" id="nv">
       <?php for($i=0;$i<count($dsNV);$i++):
         $r=$dsNV[$i]; $sel=($r['maNguoiDung']==$nv)?' selected="selected"':''; ?>
@@ -26,6 +31,7 @@ $thangLabel = date('m/Y', strtotime($d));
         </option>
       <?php endfor; ?>
     </select>
+    <?php endif; ?>
 
     <label style="margin-left:10px;">Chọn ngày:</label>
     <input type="date" name="d" id="d" value="<?php echo htmlspecialchars(isset($d)?$d:date('Y-m-d')); ?>"/>

@@ -95,7 +95,16 @@ class LichController {
         // chỉ lấy công nhân
         $all=$this->mNhanVien->getAll(); $dsNV=array();
         foreach($all as $r){ if($this->isWorker($r)) $dsNV[]=$r; }
-        if($nv=='' && !empty($dsNV)) $nv=$dsNV[0]['maNguoiDung'];
+
+        // Nếu người dùng đang đăng nhập là công nhân, chỉ hiển thị chính họ
+        $curUser = isset($_SESSION['user']) ? $_SESSION['user'] : null;
+        if ($curUser && $this->isWorker($curUser)) {
+            $nv = isset($curUser['maNguoiDung']) ? $curUser['maNguoiDung'] : $nv;
+            $single = $this->mNhanVien->getById($nv);
+            if ($single) { $dsNV = array($single); }
+        } else {
+            if($nv=='' && !empty($dsNV)) $nv=$dsNV[0]['maNguoiDung'];
+        }
 
         list($from,$to) = $this->getWeekBounds($d);
 

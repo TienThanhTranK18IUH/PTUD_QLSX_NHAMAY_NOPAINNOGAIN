@@ -97,8 +97,16 @@ class ChamCong {
         if (!$ok){
             echo "<pre style='color:red'>Lỗi SQL: ".$this->conn->error."</pre>";
             echo "<pre style='color:gray'>".$sql."</pre>";
+            return false;
         }
-        return $ok ? true : false;
+        
+        // Kiểm tra xem có dữ liệu thực sự được insert không
+        if ($this->conn->affected_rows <= 0) {
+            $_SESSION['err'] = '⚠️ Dữ liệu không được lưu. Vui lòng kiểm tra tính hợp lệ của dữ liệu.';
+            return false;
+        }
+        
+        return true;
     }
 
     /* ============ API cho xem lịch/giờ công ============ */
