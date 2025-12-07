@@ -23,7 +23,7 @@ if(session_id() == '') {
                 $displayRole = isset($u['vaiTro']) ? $u['vaiTro'] : '';
             ?>
                 <span>Xin chào, <?php echo htmlspecialchars($displayName) . ' (' . htmlspecialchars($displayRole) . ')'; ?></span>
-                <a href="index.php?controller=auth&action=logout" class="logout-btn">Đăng xuất</a>
+                <a href="index.php?controller=auth&action=logout" class="logout-btn" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?');">Đăng xuất</a>
             <?php else: ?>
                 <a href="index.php?controller=auth&action=login" class="logout-btn">Đăng nhập</a>
             <?php endif; ?>
