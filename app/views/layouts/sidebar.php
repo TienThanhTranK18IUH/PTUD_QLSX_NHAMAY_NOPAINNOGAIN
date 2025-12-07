@@ -154,7 +154,7 @@ class="<?php echo nav_active($cl==='phieu' && $al==='index'); ?>">
                     <li>
                         <a href="index.php?controller=phieu&amp;action=suachua"
                             class="<?php echo nav_active($isSCActive); ?>">
-                            🔧 Phiếu bảo trì &amp; sửa chữa
+                            🔧 Phiếu yêu cầu sửa chữa
                         </a>
                     </li>
                     <?php endif; ?>
@@ -193,14 +193,32 @@ class="<?php echo nav_active($cl==='phancongcongviecsanxuat' || $cl==='PhanCongC
             </li>
             <?php endif; ?>
 
-                <?php if (checkRole(array('manager','leader'))): ?>
-                <li><a href="index.php?controller=baoTri" class="<?php echo nav_active($cl==='baotri'); ?>">🔧 Bảo trì &amp;
-                    sửa chữa</a></li>
-                <?php endif; ?>
-                <?php if (checkRole(array('manager','leader'))): ?>
-                <li><a href="index.php?controller=thongKe" class="<?php echo nav_active($cl==='thongke'); ?>">📊 Thống kê
-                    &amp; báo cáo</a></li>
-                <?php endif; ?>
+            <!-- ⚙️ Phân công & sản xuất -->
+            <?php if (checkRole(array('manager','leader'))): ?>
+            <li
+                class="has-submenu <?php echo ($cl==='phancongcongviecsanxuat' || $cl==='phancongdoica') ? 'open' : ''; ?>">
+                <a href="#">⚙️ Phân công &amp; sản xuất ▾</a>
+                <ul class="submenu">
+                    <li>
+                        <a href="index.php?controller=PhanCongCongViecSanXuat"
+class="<?php echo nav_active($cl==='phancongcongviecsanxuat' || $cl==='PhanCongCongViecSanXuat'); ?>">
+                            🧰 Phân công sản xuất
+                        </a>
+                    </li>
+                    <li>
+                        <a href="index.php?controller=PhanCongDoiCa"
+                            class="<?php echo nav_active($cl==='phancongdoica' || $cl==='PhanCongDoiCa'); ?>">
+                            🔄 Phân công, đổi ca công việc cho công nhân
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <?php endif; ?>
+
+            <?php if (checkRole(array('manager','leader'))): ?>
+            <li><a href="index.php?controller=thongKe" class="<?php echo nav_active($cl==='thongke'); ?>">📊 Thống kê
+                &amp; báo cáo</a></li>
+            <?php endif; ?>
         </ul>
     </nav>
 

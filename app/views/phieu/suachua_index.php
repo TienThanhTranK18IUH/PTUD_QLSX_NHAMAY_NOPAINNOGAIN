@@ -4,6 +4,14 @@
        style="background:#27ae60;color:white;padding:6px 12px;border-radius:4px;">➕ Lập phiếu mới</a>
     <br><br>
 
+    <!-- DEBUG: In ra dữ liệu để kiểm tra -->
+    <?php 
+    echo "<!-- DEBUG: phieus count = " . (isset($phieus) ? count($phieus) : 'NOT SET') . " -->";
+    if (!empty($phieus)) {
+        echo "<!-- First record: " . json_encode($phieus[0]) . " -->";
+    }
+    ?>
+
     <table border="1" width="100%" cellpadding="8" cellspacing="0">
         <thead style="background:#f0f0f0;">
             <tr>
@@ -31,7 +39,7 @@
                 </td>
             </tr>
         <?php endforeach; else: ?>
-            <tr><td colspan="7">Không có dữ liệu phiếu sửa chữa</td></tr>
+            <tr><td colspan="7" style="text-align:center;padding:15px;">📭 Chưa có phiếu sửa chữa nào. <a href="index.php?controller=phieu&action=add_suachua">➕ Lập phiếu mới</a></td></tr>
         <?php endif; ?>
         </tbody>
     </table>

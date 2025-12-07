@@ -23,8 +23,8 @@ class BaoTriController {
             $noiDung       = isset($_POST['noiDung']) ? $_POST['noiDung'] : '';
             $maThietBi     = isset($_POST['maThietBi']) ? $_POST['maThietBi'] : '';
             $tenThietBi    = isset($_POST['tenThietBi']) ? $_POST['tenThietBi'] : '';
-            // TODO: lấy mã người dùng từ session nếu có
-            $maNguoiDung   = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'ND006';
+            // Lấy mã người dùng từ session hoặc từ hidden input form
+            $maNguoiDung   = isset($_POST['maNguoiLap']) ? $_POST['maNguoiLap'] : (isset($_SESSION['user']['maNguoiDung']) ? $_SESSION['user']['maNguoiDung'] : 'ND006');
 
             if ($maPhieu == '') {
                 // Thêm mới phiếu ghi nhận (nếu người dùng bấm Ghi nhận từ phiếu yêu cầu)
@@ -35,9 +35,11 @@ class BaoTriController {
             }
 
             if ($ok) {
-                echo "<script>alert('✔️ Lưu dữ liệu thành công!');location.href='index.php?controller=baotri&action=index';</script>";
+                // Không hiển thị alert — chỉ chuyển hướng về trang chính
+                header('Location: index.php?controller=baotri&action=index');
                 exit;
             } else {
+                // Nếu muốn, vẫn có thể giữ thông báo lỗi (hiển thị qua JS)
                 echo "<script>alert('❌ Lưu thất bại!');</script>";
             }
         }

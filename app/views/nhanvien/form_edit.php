@@ -1,4 +1,85 @@
 <?php declare(strict_types=1); ?>
+<style>
+    /* Khung chính */
+.content {
+    background: #ffffff;
+    padding: 20px 25px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    max-width: 700px;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
+}
+
+/* Tiêu đề */
+.content h2 {
+    margin-bottom: 15px;
+    font-size: 22px;
+    color: #333;
+}
+
+/* Bảng form */
+.content table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Cột tiêu đề */
+.content table td:first-child {
+    width: 35%;
+    font-weight: bold;
+    color: #444;
+}
+
+/* Input + select */
+.content input[type="text"],
+.content input[type="password"],
+.content input[type="email"],
+.content input[type="date"],
+.content select {
+    width: 100%;
+    padding: 7px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: 0.2s;
+}
+
+/* Hover + focus */
+.content input:focus,
+.content select:focus {
+    border-color: #2980b9;
+    outline: none;
+    box-shadow: 0 0 4px rgba(41, 128, 185, 0.4);
+}
+
+/* Nút lưu */
+.content input[type="submit"] {
+    background: #27ae60 !important;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.content input[type="submit"]:hover {
+    background: #219150 !important;
+}
+
+/* Nút quay lại */
+.content a {
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.content a:hover {
+    color: #000;
+}
+
+/* Khoảng cách giữa các dòng */
+.content table td {
+    padding: 8px 4px;
+}
+
+</style>
 <div class="content">
     <h2>✏️ Chỉnh sửa nhân viên</h2>
 
@@ -11,7 +92,12 @@
 
             <tr>
                 <td><b>Tên đăng nhập:</b></td>
-                <td><input type="text" name="tenDangNhap" value="<?php echo htmlspecialchars($nhanvien['tenDangNhap']); ?>" required></td>
+                <td><input type="text" name="tenDangNhap" value="<?php echo htmlspecialchars($nhanvien['tenDangNhap']); ?>" required ></td>
+            </tr>
+
+            <tr>
+                <td><b>Mật khẩu:</b></td>
+                <td><input type="password" name="matKhau" placeholder="Để trống nếu không thay đổi"></td>
             </tr>
 
             <tr>

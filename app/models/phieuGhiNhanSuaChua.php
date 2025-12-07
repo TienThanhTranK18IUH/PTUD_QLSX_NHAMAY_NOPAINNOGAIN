@@ -14,9 +14,12 @@ class PhieuGhiNhanSuaChua {
     // 1️⃣ Lấy danh sách phiếu yêu cầu sửa chữa
     public function layTatCaYeuCau() {
         $sql = "
-            SELECT yc.maPhieu, yc.maTB, tb.tenTB, yc.trangThai
+            SELECT yc.maPhieu, yc.maTB, tb.tenTB, yc.trangThai,
+                   yc.moTaSuCo, yc.ngayLap, yc.maNguoiLap,
+                   u.hoTen AS hoTenNguoiLap
             FROM PhieuYeuCauSuaChua yc
             LEFT JOIN ThietBi tb ON yc.maTB = tb.maTB
+            LEFT JOIN nguoidung u ON yc.maNguoiLap = u.maNguoiDung
             ORDER BY yc.maPhieu DESC
         ";
         return $this->db->query($sql);

@@ -83,7 +83,7 @@ $boPhanXuong = array(
         <label><b>Trạng thái:</b></label><br>
         <select name="trangThai" style="width:100%;">
             <option value="HoatDong" selected>Hoạt động</option>
-            <option value="Ngung">Ngừng</option>
+          
         </select><br><br>
 
         <button type="submit"

@@ -15,7 +15,7 @@
                 <th>Mã NL</th>
                 <th>Tên nguyên liệu</th> <!-- 🆕 Cột mới -->
                 <th>SL Nguyên liệu</th>
-                <th>người lập</th>
+                <th>Người lập</th>
             </tr>
         </thead>
         <tbody>

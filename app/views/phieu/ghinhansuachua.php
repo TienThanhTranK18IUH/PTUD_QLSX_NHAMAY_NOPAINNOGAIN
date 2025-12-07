@@ -1,5 +1,6 @@
 <?php declare(strict_types=1); 
 // View: ghinhansuachua.php (PHP 5.2 compatible)
+if (session_id() === '') session_start();
 ?>
 <div class="content">
     <h2>🔧 Phiếu ghi nhận sửa chữa thiết bị</h2>
@@ -7,39 +8,74 @@
     <div style="display:flex; gap:20px;">
         <!-- DANH SÁCH PHIẾU YÊU CẦU -->
         <div style="flex:1;">
-            <h3>📋 Danh sách phiếu yêu cầu sửa chữa</h3>
-            <table class="tbl" width="100%">
-                <thead>
-                    <tr>
-                        <th>Mã phiếu YC</th>
-                        <th>Mã thiết bị</th>
-                        <th>Tên thiết bị</th>
-                        <th>Trạng thái YC</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (!empty($dsYeuCau)) {
-            foreach ($dsYeuCau as $r) { ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($r['maPhieu']); ?></td>
-                        <td><?php echo htmlspecialchars($r['maTB']); ?></td>
-                        <td><?php echo htmlspecialchars($r['tenTB']); ?></td>
-                        <td><?php echo htmlspecialchars($r['trangThai']); ?></td>
-                        <td>
-                            <a
-                                href="index.php?controller=baotri&action=index&maPhieuYCSC=<?php echo urlencode($r['maPhieu']); ?>">📝
-                                Ghi nhận</a>
-                        </td>
-                    </tr>
-                    <?php }
-          } else { ?>
-                    <tr>
-                        <td colspan="5" align="center">Không có phiếu yêu cầu sửa chữa.</td>
-                    </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
+<h3>📋 Danh sách phiếu yêu cầu sửa chữa</h3>
+<table class="tbl" width="100%">
+    <thead>
+        <tr>
+            <th>Mã phiếu YC</th>
+            <th>Mã thiết bị</th>
+            <th>Tên thiết bị</th>
+            <th>Mô tả sự cố</th>
+            <th>Ngày lập</th>
+            <th>Người lập</th>
+            <th>Trạng thái YC</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        $rowsPrinted = 0;
+        // Build a list of request IDs (maPhieu of YC) that already have a completed ghi nhận
+        $completedRequests = array();
+        if (!empty($dsGhiNhan)) {
+            foreach ($dsGhiNhan as $g) {
+                if (isset($g['maPhieuYCSC']) && isset($g['trangThai']) && trim($g['trangThai']) === 'Hoàn thành') {
+                    $completedRequests[] = $g['maPhieuYCSC'];
+                }
+            }
+            // unique for faster in_array checks
+            $completedRequests = array_unique($completedRequests);
+        }
+
+        if (!empty($dsYeuCau)) {
+            foreach ($dsYeuCau as $r) {
+                // Ẩn các phiếu đã hoàn thành trực tiếp hoặc đã có ghi nhận hoàn thành
+                if ((isset($r['trangThai']) && trim($r['trangThai']) === 'Hoàn thành') || (isset($r['maPhieu']) && in_array($r['maPhieu'], $completedRequests))) continue;
+                $rowsPrinted++;
+                ?>
+        <tr>
+            <td><?php echo htmlspecialchars($r['maPhieu']); ?></td>
+            <td><?php echo htmlspecialchars($r['maTB']); ?></td>
+            <td><?php echo htmlspecialchars($r['tenTB']); ?></td>
+            <td><?php echo htmlspecialchars($r['moTaSuCo']); ?></td>
+            <td><?php echo htmlspecialchars($r['ngayLap']); ?></td>
+            <td>
+                <?php 
+                    echo htmlspecialchars(
+                        isset($r['hoTenNguoiLap']) ? 
+                        ($r['maNguoiLap'] . " - " . $r['hoTenNguoiLap']) 
+                        : $r['maNguoiLap']
+                    );
+                ?>
+            </td>
+            <td><?php echo htmlspecialchars($r['trangThai']); ?></td>
+            <td>
+                <a href="index.php?controller=baotri&action=index&maPhieuYCSC=<?php echo urlencode($r['maPhieu']); ?>">
+                    📝 Ghi nhận
+                </a>
+            </td>
+        </tr>
+        <?php }
+        }
+
+        if ($rowsPrinted === 0) { ?>
+        <tr>
+            <td colspan="8" align="center">Không có phiếu yêu cầu sửa chữa.</td>
+        </tr>
+        <?php } ?>
+    </tbody>
+</table>
+
         </div>
 
         <!-- DANH SÁCH PHIẾU GHI NHẬN -->
@@ -94,10 +130,22 @@
         </p>
 
         <p>
+            <label><b>Người lập phiếu:</b></label><br />
+            <?php 
+            $displayName = 'Chưa xác định';
+            $maNguoiLap = '';
+            if (isset($_SESSION['user']) && !empty($_SESSION['user'])) {
+                $displayName = isset($_SESSION['user']['hoTen']) ? $_SESSION['user']['hoTen'] : 'Chưa xác định';
+                $maNguoiLap = isset($_SESSION['user']['maNguoiDung']) ? $_SESSION['user']['maNguoiDung'] : '';
+            }
+            ?>
+            <input type="text" value="<?php echo htmlspecialchars($displayName); ?>" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;" disabled />
+            <input type="hidden" name="maNguoiLap" value="<?php echo htmlspecialchars($maNguoiLap); ?>" />
+        </p>
+
+        <p>
             <label><b>Trạng thái:</b></label><br />
-            <select name="trangThai">
-                <option value="Chờ xử lý">Chờ xử lý</option>
-                <option value="Đang xử lý" selected>Đang xử lý</option>
+            <select name="trangThai" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
                 <option value="Hoàn thành">Hoàn thành</option>
             </select>
         </p>
@@ -116,179 +164,104 @@
 </div>
 
 <style>
-/* ==================== GLOBAL ==================== */
-body {
-    font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #eef1f6;
-    color: #2c3e50;
-    margin: 0;
-    padding: 0;
-}
-
+    /* ===== Khung nội dung ===== */
 .content {
-    max-width: 1400px;
-    margin: 35px auto;
-    padding: 28px;
-    background: #ffffff;
-    border-radius: 14px;
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+    background: #fff;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-family: Arial, sans-serif;
 }
 
-/* ==================== TITLES ==================== */
-h2 {
-    color: #2563eb;
-    border-bottom: 3px solid #2563eb;
-    padding-bottom: 12px;
-    margin-bottom: 28px;
-    font-size: 1.8em;
-    font-weight: 700;
+/* ===== Tiêu đề ===== */
+h2, h3 {
+    margin-bottom: 12px;
+    color: #333;
 }
 
-h3 {
-    font-size: 1.25em;
-    color: #1f2937;
-    margin-bottom: 15px;
-    font-weight: 600;
-}
-
-/* ==================== TABLE ==================== */
+/* ===== Bảng ===== */
 .tbl {
-    width: 100%;
     border-collapse: collapse;
-    font-size: 0.95em;
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    margin-bottom: 20px;
+    font-size: 14px;
 }
 
-.tbl thead th {
-    background-color: #2563eb;
-    color: white;
-    padding: 13px;
+.tbl th, .tbl td {
+    border: 1px solid #ccc;
+    padding: 8px;
     text-align: left;
-    font-weight: 600;
 }
 
-.tbl tbody tr {
-    background: white;
-    transition: background 0.2s ease;
+.tbl th {
+    background: #f2f2f2;
+    font-weight: bold;
 }
 
-.tbl tbody tr:nth-child(even) {
-    background: #f6f8fc;
+.tbl tr:nth-child(even) {
+    background: #fafafa;
 }
 
-.tbl tbody tr:hover {
-    background: #e8f0fe;
-}
-
-.tbl td {
-    padding: 12px 14px;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.tbl td:last-child {
-    text-align: center;
-}
-
-/* Link "Ghi nhận" */
+/* ===== Link thao tác ===== */
 .tbl a {
-    background: #34d399;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 5px;
     text-decoration: none;
-    font-weight: 500;
-    transition: background 0.2s ease;
+    color: #0066cc;
+    font-weight: bold;
 }
 
 .tbl a:hover {
-    background: #059669;
+    text-decoration: underline;
 }
 
-/* ==================== FORM ==================== */
-.form-edit {
-    max-width: 720px;
-    padding: 25px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e5e7eb;
-}
-
-.form-edit p {
-    margin-bottom: 20px;
-}
-
+/* ===== Form ===== */
 .form-edit label {
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 6px;
+    font-weight: bold;
+    margin-bottom: 4px;
     display: block;
+    color: #333;
 }
 
-.form-edit input[type=date],
-.form-edit select,
-.form-edit textarea {
+.form-edit input[type="text"],
+.form-edit input[type="date"],
+.form-edit textarea,
+.form-edit select {
     width: 100%;
-    max-width: 480px;
-    padding: 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    background: #f9fafb;
-    font-size: 1em;
-    transition: border 0.2s ease, box-shadow 0.2s ease;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    font-size: 14px;
 }
 
-.form-edit input:focus,
-.form-edit select:focus,
-.form-edit textarea:focus {
-    border-color: #2563eb;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
-}
-
-.form-edit textarea {
-    min-height: 110px;
-}
-
-/* ==================== BUTTONS ==================== */
-.form-edit button[name="btnSave"] {
-    background-color: #2563eb;
-    padding: 10px 22px;
+/* ===== Nút ===== */
+button {
+    background: #27ae60;
+    color: #fff;
     border: none;
-    border-radius: 8px;
-    color: white;
-    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease;
+    font-size: 14px;
 }
 
-.form-edit button[name="btnSave"]:hover {
-    background-color: #1d4ed8;
-    transform: translateY(-1px);
+button:hover {
+    background: #1f8a4c;
 }
 
-.form-edit a {
+a.btn-back, .form-edit a {
     display: inline-block;
-    padding: 9px 18px;
-    color: #4b5563;
-    border: 1px solid #6b7280;
-    border-radius: 8px;
+    padding: 8px 16px;
+    background: #ccc;
+    border-radius: 4px;
+    color: #333;
     text-decoration: none;
-    transition: background 0.2s ease;
+    margin-left: 8px;
 }
 
-.form-edit a:hover {
-    background: #e5e7eb;
+a.btn-back:hover, .form-edit a:hover {
+    background: #b5b5b5;
 }
 
-/* ==================== DIVIDERS ==================== */
-hr {
-    border: none;
-    height: 1px;
-    margin: 30px 0;
-    background: linear-gradient(to right, transparent, #ccc, transparent);
-}
 </style>

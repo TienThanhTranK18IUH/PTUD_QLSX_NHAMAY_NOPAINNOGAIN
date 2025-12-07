@@ -19,7 +19,7 @@ if(session_id() == '') {
         <div class="user-info">
             <?php if (isset($_SESSION['user']) && !empty($_SESSION['user'])): 
                 $u = $_SESSION['user'];
-                $displayName = isset($u['tenDangNhap']) ? $u['tenDangNhap'] : (isset($u['hoTen']) ? $u['hoTen'] : '');
+                $displayName = isset($u['hoTen']) ? $u['hoTen'] : (isset($u['hoTen']) ? $u['hoTen'] : '');
                 $displayRole = isset($u['vaiTro']) ? $u['vaiTro'] : '';
             ?>
                 <span>Xin chào, <?php echo htmlspecialchars($displayName) . ' (' . htmlspecialchars($displayRole) . ')'; ?></span>
