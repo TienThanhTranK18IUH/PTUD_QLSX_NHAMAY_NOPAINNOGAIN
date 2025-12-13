@@ -58,7 +58,6 @@ class PhieuXuatNLController {
                 $soLuongTonKho
             );
 
-            header('Content-Type: text/html; charset=UTF-8');
             if ($ok) {
                 echo "<script>alert('✅ Lưu phiếu xuất thành công!'); window.location='index.php?controller=phieuxuatNL&action=add';</script>";
             } else {

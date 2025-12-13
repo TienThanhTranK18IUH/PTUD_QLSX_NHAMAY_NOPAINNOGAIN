@@ -1,4 +1,4 @@
-<?php declare(strict_types=1); 
+<?php
 // ================================
 // sidebar.php — Thanh menu bên trái (PHP 5.x)
 // ================================

@@ -39,7 +39,6 @@ class PhieuNhapNLController {
 
         $ketqua = $this->model->luuPhieuNhap($maKho, $ngayNhap, $maNguoiLap, $trangThai, $maNguyenLieu, $soLuong, $soLuongTonKho);
 
-        header('Content-Type: text/html; charset=UTF-8');
         if ($ketqua) {
             echo "<script>alert('✅ Lưu phiếu nhập thành công!'); window.location='index.php?controller=phieunhapNL&action=formNhapPhieu';</script>";
         } else {

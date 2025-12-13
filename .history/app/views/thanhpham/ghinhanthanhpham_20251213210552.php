@@ -1,4 +1,4 @@
-<?php declare(strict_types=1); 
+<?php
 $maTP = isset($maTP) ? $maTP : 'TP00X';
 $keHoachList = isset($keHoachList) ? $keHoachList : array();
 $success = isset($success) ? $success : false;

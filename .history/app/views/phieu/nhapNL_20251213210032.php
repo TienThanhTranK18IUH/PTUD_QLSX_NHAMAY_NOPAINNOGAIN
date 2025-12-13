@@ -72,6 +72,7 @@ body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background:
                 <select name="trangThai" class="form-control" required>
                     <option value="ChoDuyet" selected>Chờ duyệt</option>
                     <option value="DaNhap">Đã nhập</option>
+                    <option value="Huy">Hủy</option>
                 </select>
             </div>
             <div class="form-group">

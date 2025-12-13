@@ -1,4 +1,4 @@
-<?php declare(strict_types=1); 
+<?php
 $maTP = isset($maTP) ? $maTP : 'TP00X';
 $keHoachList = isset($keHoachList) ? $keHoachList : array();
 $success = isset($success) ? $success : false;
@@ -275,7 +275,7 @@ $tenTP_popup = isset($tenTP) ? $tenTP : '';
                         <label>Tình trạng:</label>
                         <select name="tinhTrang" class="form-select">
                             <option value="Chờ kiểm tra">Chờ kiểm tra</option>
-                            
+                            <option value="Đạt">Đạt</option>
                         </select>
                     </div>
                 </div>
