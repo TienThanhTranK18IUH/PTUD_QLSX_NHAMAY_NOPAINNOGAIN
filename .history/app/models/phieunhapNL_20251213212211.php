@@ -44,7 +44,7 @@ class PhieuNhapNL {
     // Lấy danh sách nguyên liệu
     // -------------------------------
     function layDanhSachNguyenLieu() {
-        $sql = "SELECT k.makehoach, k.manguyenlieu, k.tennguyenlieu, n.soluongton, n.makho, k.soluongnguyenlieu 
+        $sql = "SELECT k.makehoach,k.manguyenlieu, k.tennguyenlieu, n.soluongton, n.makho, k.soluongnguyenlieu 
                 FROM nguyenlieu n 
                 LEFT JOIN kehoachsanxuat k ON n.manguyenlieu = k.manguyenlieu";
         return $this->db->query($sql);
