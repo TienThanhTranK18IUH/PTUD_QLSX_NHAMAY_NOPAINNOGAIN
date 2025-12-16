@@ -80,8 +80,6 @@ body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background:
                     <?php
                     if (!empty($ds_nguyenlieu)) {
                         foreach ($ds_nguyenlieu as $nl) {
-                            // Loại bỏ nguyên liệu có tên '--' hoặc không thuộc kế hoạch sản xuất
-                            if (trim($nl['tennguyenlieu']) === '--' || empty($nl['makehoach'])) continue;
                             echo '<option value="'.htmlspecialchars($nl['manguyenlieu']).'" '
                                  .'data-ton="'.htmlspecialchars($nl['soluongton']).'" '
                                  .'data-maKho="'.htmlspecialchars($nl['makho']).'" '

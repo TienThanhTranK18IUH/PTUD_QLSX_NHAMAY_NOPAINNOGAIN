@@ -27,17 +27,14 @@ class PhieuXuatNL {
 
 
     function layDanhSachPhieuYeuCau() {
-        // Lấy các phiếu yêu cầu có trạng thái 'ChoDuyet' và chưa được xuất kho (không có trong phieuxuatkhonl với trạng thái 'DaDuyet')
-        $sql = "SELECT pyc.maPhieu, pyc.maNguyenLieu, pyc.soLuong
-                FROM phieuyeucaunguyenlieu pyc
-                WHERE pyc.trangThai = 'ChoDuyet'
-                AND pyc.maPhieu NOT IN (
-                    SELECT pxk.maPhieuYC FROM phieuxuatkhonl pxk WHERE pxk.trangthai = 'DaDuyet'
-                )";
-        $result = $this->db->conn->query($sql);
-        $data = array();
-        while ($row = $result->fetch_assoc()) { $data[] = $row; }
-        return $data;
+    $result = $this->db->conn->query("
+        SELECT maPhieu, maNguyenLieu, soLuong
+        FROM phieuyeucaunguyenlieu
+        WHERE trangThai = 'ChoDuyet'
+    ");
+    $data = array();
+    while ($row = $result->fetch_assoc()) { $data[] = $row; }
+    return $data;
     }
 
     function layDanhSachNguyenLieu() {
@@ -51,19 +48,10 @@ class PhieuXuatNL {
 
     function luuPhieuXuat($maKho, $ngayXuat, $maNguoiLap, $maPhieuYC, $maNguyenLieu, $soLuongNLYC, $soLuongTonKho) {
         $conn = $this->db->conn;
-        // Insert phiếu xuất, trạng thái 'DaDuyet'
+        // Insert phiếu xuất, mặc định trạng thái là 'DaDuyet'
         $sql = "INSERT INTO phieuxuatkhonl(maKho, ngayXuat, maNguoiLap, maPhieuYC, maNguyenLieu, soLuongNLYC, soLuongTonKho, trangthai)
             VALUES ('$maKho', '$ngayXuat', '$maNguoiLap', '$maPhieuYC', '$maNguyenLieu', $soLuongNLYC, $soLuongTonKho, 'DaDuyet')";
         $result = $conn->query($sql);
-        if ($result) {
-            // Cập nhật tồn kho: trừ đi số lượng xuất
-            $sql_update = "UPDATE nguyenlieu SET soluongton = soluongton - {$soLuongNLYC} WHERE manguyenlieu = '{$maNguyenLieu}'";
-            $res2 = $conn->query($sql_update);
-            if (!$res2) {
-                echo '<pre>Lỗi SQL update: '.$conn->error.'</pre>';
-                return false;
-            }
-        }
         return $result;
     }
 

@@ -76,12 +76,9 @@ body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background:
             <div class="form-group">
                 <label><strong>Nguyên liệu</strong></label>
                 <select id="maNguyenLieu" name="maNguyenLieu" class="form-control" onchange="capNhatThongTin()" required>
-                    <option value="">-- Chọn nguyên liệu --</option>
                     <?php
                     if (!empty($ds_nguyenlieu)) {
                         foreach ($ds_nguyenlieu as $nl) {
-                            // Loại bỏ nguyên liệu có tên '--' hoặc không thuộc kế hoạch sản xuất
-                            if (trim($nl['tennguyenlieu']) === '--' || empty($nl['makehoach'])) continue;
                             echo '<option value="'.htmlspecialchars($nl['manguyenlieu']).'" '
                                  .'data-ton="'.htmlspecialchars($nl['soluongton']).'" '
                                  .'data-maKho="'.htmlspecialchars($nl['makho']).'" '

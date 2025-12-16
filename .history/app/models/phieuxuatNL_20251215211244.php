@@ -51,18 +51,13 @@ class PhieuXuatNL {
 
     function luuPhieuXuat($maKho, $ngayXuat, $maNguoiLap, $maPhieuYC, $maNguyenLieu, $soLuongNLYC, $soLuongTonKho) {
         $conn = $this->db->conn;
-        // Insert phiếu xuất, trạng thái 'DaDuyet'
+        // Insert phiếu xuất, mặc định trạng thái là 'DaDuyet'
         $sql = "INSERT INTO phieuxuatkhonl(maKho, ngayXuat, maNguoiLap, maPhieuYC, maNguyenLieu, soLuongNLYC, soLuongTonKho, trangthai)
             VALUES ('$maKho', '$ngayXuat', '$maNguoiLap', '$maPhieuYC', '$maNguyenLieu', $soLuongNLYC, $soLuongTonKho, 'DaDuyet')";
         $result = $conn->query($sql);
-        if ($result) {
-            // Cập nhật tồn kho: trừ đi số lượng xuất
-            $sql_update = "UPDATE nguyenlieu SET soluongton = soluongton - {$soLuongNLYC} WHERE manguyenlieu = '{$maNguyenLieu}'";
-            $res2 = $conn->query($sql_update);
-            if (!$res2) {
-                echo '<pre>Lỗi SQL update: '.$conn->error.'</pre>';
-                return false;
-            }
+        // Nếu insert thành công, cập nhật trạng thái phiếu yêu cầu
+        if ($result && $maPhieuYC) {
+            $conn->query("UPDATE phieuyeucaunguyenlieu SET trangThai = 'DaDuyet' WHERE maPhieu = '" . $conn->real_escape_string($maPhieuYC) . "'");
         }
         return $result;
     }
