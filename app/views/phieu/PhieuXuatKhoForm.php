@@ -1,237 +1,238 @@
+<?php
+/*
+Biến controller truyền sang:
+$maPhieu
+$ngayXuat
+$nguoiLap
+$maNguoiLap
+$dsTP  // danh sách TP đạt
+*/
+?>
+
 <style>
-/* Khối form */
-.phieu-form {
+body {
+    font-family: 'Segoe UI', Tahoma, Arial;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 0;
+}
+
+.phieu-box {
     max-width: 750px;
-    margin: 0 auto;
-    padding: 22px;
-    background: #ffffff;
+    margin: 30px auto;
+    background: #fff;
     border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    font-family: "Segoe UI", sans-serif;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+    padding: 25px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.15);
 }
 
-/* Hàng – cột */
-.phieu-form .row {
-    display: flex;
-    gap: 16px;
+.phieu-box h2 {
+    text-align: center;
+    border-bottom: 2px solid #0d6efd;
+    padding-bottom: 12px;
+    margin-bottom: 25px;
 }
 
-.phieu-form .col {
+.row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.col {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-/* Label */
-.phieu-form label {
-    font-size: 14px;
+label {
     font-weight: 600;
-    color: #374151;
     margin-bottom: 6px;
 }
 
-/* Input + Select */
-.phieu-form input[type=text],
-.phieu-form select {
-    padding: 10px 12px;
-    font-size: 14px;
-    border: 1px solid #cbd5e1;
+input, select {
+    padding: 10px;
     border-radius: 6px;
-    background: #f9fafb;
-    transition: 0.2s ease;
+    border: 1px solid #ccc;
+    font-size: 14px;
 }
 
-.phieu-form input[type=text]:focus,
-.phieu-form select:focus {
-    border-color: #2563eb;
-    background: #fff;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+input[readonly] {
+    background: #eee;
 }
 
-.phieu-form input[readonly] {
-    background: #f3f4f6;
-    color: #6b7280;
-}
-
-/* Nút hành động */
-.form-actions {
-    margin-top: 10px;
+.actions {
     display: flex;
     gap: 12px;
+    margin-top: 25px;
 }
 
-.form-actions button {
+button {
     flex: 1;
-    background: #16a34a;
+    background: #198754;
+    color: #fff;
     border: none;
     padding: 12px;
-    border-radius: 8px;
-    color: white;
-    font-size: 15px;
+    border-radius: 6px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.2s;
+    transition: background .3s;
 }
 
-.form-actions button:hover {
-    background: #0f8a3b;
+button:hover {
+    background: #157347;
 }
 
-.form-actions a {
+.back {
     flex: 1;
+    background: #6c757d;
+    color: #fff;
     text-align: center;
-    background: #6b7280;
-    color: white;
     padding: 12px;
-    border-radius: 8px;
-    font-weight: bold;
+    border-radius: 6px;
     text-decoration: none;
-    transition: 0.2s;
+    font-weight: bold;
+    transition: background .3s;
 }
 
-.form-actions a:hover {
+.back:hover {
     background: #565e64;
 }
 
-/* Alert */
-.alert {
-    max-width: 750px;
-    margin: 0 auto 15px auto;
-    padding: 12px;
+/* POPUP */
+.popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
     border-radius: 8px;
-    font-weight: 600;
-    text-align: center;
+    color: #fff;
+    font-weight: bold;
+    animation: fadein .5s;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
 }
 
-.alert.success {
-    background: #dcfce7;
-    color: #166534;
-    border: 1px solid #86efac;
+.success { background: #198754; }
+.error { background: #dc3545; }
+
+@keyframes fadein {
+    from {opacity:0; transform: translateY(-10px);}
+    to {opacity:1;}
 }
 
-.alert.error {
-    background: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fca5a5;
-}
-
-/* Responsive */
-@media (max-width: 700px) {
-    .phieu-form .row {
-        flex-direction: column;
-    }
+@media(max-width: 768px) {
+    .row { flex-direction: column; }
 }
 </style>
-<?php
-// Hiển thị thông báo lỗi / thành công
-$tenSP = isset($_GET['tenSP']) ? $_GET['tenSP'] : '';
-$maDonHang = isset($_GET['maDonHang']) ? $_GET['maDonHang'] : '';
 
-if (isset($_GET['error'])) {
-    switch($_GET['error']) {
-        case 1: echo '<p class="alert error">❌ Đơn hàng không hợp lệ.</p>'; break;
-        case 2: echo '<p class="alert error">❌ Thành phẩm đã xuất kho!</p>'; break;
-        case 3: echo '<p class="alert error">❌ Thành phẩm không tồn tại.</p>'; break;
-        case 4: echo '<p class="alert error">❌ Số lượng '.$tenSP.' không đủ để xuất kho!</p>'; break;
-        case 5: echo '<p class="alert error">❌ Đơn hàng '.$maDonHang.' đã xuất kho thành công. Vui lòng kiểm tra lại!</p>'; break;
-    }
-}
+<?php if (isset($_GET['ok'])): ?>
+<div class="popup success">✅ Lập phiếu xuất kho thành công</div>
+<?php endif; ?>
 
-if (isset($_GET['ok']) && $_GET['ok']==1) {
-    echo '<p class="alert success">✅ Lập phiếu xuất kho thành công!</p>';
-}
+<?php if (isset($_GET['error'])): ?>
+<div class="popup error">❌ Số lượng xuất vượt quá số lượng tồn</div>
+<?php endif; ?>
 
-// Lấy danh sách phiếu xuất kho hiện tại
-$pxObj = new PhieuXuatKhoTP();
-$dsPhieu = $pxObj->getAll();
-?>
+<div class="phieu-box">
+<h2>📦 LẬP PHIẾU XUẤT KHO THÀNH PHẨM</h2>
+<form method="post" action="index.php?controller=phieuNhapXuat&action=luuphieu">
 
-<h2
-    style="text-align:center; font-weight:bold; border-bottom:2px solid #007bff; padding-bottom:10px; margin-bottom:20px;">
-    📝 LẬP PHIẾU XUẤT KHO THÀNH PHẨM
-</h2>
-
-<form method="post" action="index.php?controller=phieuNhapXuat&action=luuphieu" class="phieu-form">
-    <div class="row">
-        <div class="col">
-            <label>Mã phiếu:</label>
-            <input type="text" name="maPhieu" value="<?php echo $maPhieu; ?>" readonly>
-        </div>
-        <div class="col">
-            <label>Ngày lập phiếu:</label>
-            <input type="text" name="ngayXuat" value="<?php echo date('d-m-Y'); ?>" readonly>
-        </div>
+<div class="row">
+    <div class="col">
+        <label>Mã phiếu</label>
+        <input type="text" value="<?php echo $maPhieu; ?>" readonly>
+        <input type="hidden" name="maPhieu" value="<?php echo $maPhieu; ?>">
     </div>
-
-    <div class="row">
-        <div class="col">
-            <label>Mã kho:</label>
-            <input type="text" name="maKho" value="K002 - Kho Thành Phẩm" readonly>
-        </div>
-        <div class="col">
-            <label>Người lập:</label>
-            <input type="text" name="maNguoiLap" value="<?php echo $maNguoiLap; ?>" readonly>
-        </div>
+    <div class="col">
+        <label>Ngày lập</label>
+        <input type="text" value="<?php echo $ngayXuat; ?>" readonly>
     </div>
+</div>
 
-    <div class="row">
-        <div class="col">
-            <label>Chọn mã đơn hàng:</label>
-            <select name="maDonHang" id="maDonHang" onchange="layThongTinDonHang()" required>
-                <?php if (!empty($dsDonHang)) : ?>
-                <option value="">-- Chọn đơn hàng --</option>
-                <?php foreach ($dsDonHang as $dh): ?>
-                <option value="<?= $dh['maDonHang'] ?>" data-maTP="<?= $dh['maTP'] ?>" data-tenTP="<?= $dh['tenTP'] ?>"
-                    data-soluong="<?= $dh['soLuongDH'] ?>">
-                    <?= $dh['maDonHang'] ?> - <?= $dh['tenTP'] ?>
-                </option>
-                <?php endforeach; ?>
-                <?php else: ?>
-                <option value="" disabled>⚠️ Không có mã đơn hàng phù hợp để lập phiếu</option>
-                <?php endif; ?>
-            </select>
-
-        </div>
-        <div class="col">
-            <label>Mã Thành phẩm:</label>
-            <input type="text" id="maTP" name="maTP" readonly>
-        </div>
+<div class="row">
+    <div class="col">
+        <label>Người lập</label>
+        <input type="text" value="<?php echo $nguoiLap; ?>" readonly>
+        <input type="hidden" name="maNguoiLap" value="<?php echo $maNguoiLap; ?>">
     </div>
+</div>
 
-    <div class="row">
-        <div class="col">
-            <label>Tên Thành phẩm:</label>
-            <input type="text" id="tenTP" name="tenTP" readonly>
-        </div>
-        <div class="col">
-            <label>Số lượng xuất kho:</label>
-            <input type="text" id="soLuong" name="soLuong" readonly>
-        </div>
-    </div>
+<hr>
 
-    <div class="form-actions">
-        <a href="index.php?controller=phieuNhapXuat&action=xuatkhotp">⬅ Quay lại</a>
-        <button type="submit">✅ Xác nhận</button>
+<div class="row">
+    <div class="col">
+        <label>Chọn mã thành phẩm</label>
+        <select name="maTP" id="maTP" onchange="fillTP()" required>
+            <option value="">-- Chọn thành phẩm --</option>
+            <?php foreach ($dsTP as $tp): ?>
+            <option value="<?php echo $tp['maTP']; ?>"
+                data-ten="<?php echo $tp['tenTP']; ?>"
+                data-kehoach="<?php echo $tp['maKeHoach']; ?>"
+                data-xuong="<?php echo $tp['maXuong']; ?>"
+                data-soluong="<?php echo $tp['soLuong']; ?>">
+                <?php echo $tp['maTP']; ?> - <?php echo $tp['tenTP']; ?>
+            </option>
+            <?php endforeach; ?>
+        </select>
     </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <label>Tên thành phẩm</label>
+        <input type="text" id="tenTP" readonly>
+    </div>
+    <div class="col">
+        <label>Mã kế hoạch</label>
+        <input type="text" id="maKeHoach" readonly>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <label>Mã xưởng</label>
+        <input type="text" id="maXuong" readonly>
+    </div>
+    <div class="col">
+        <label>Số lượng tồn</label>
+        <input type="number" id="soLuongTon" readonly>
+        <input type="hidden" name="soLuongTon" id="soLuongTonHidden">
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <label>Số lượng xuất kho</label>
+        <input type="number" name="soLuongXuat" required min="1">
+    </div>
+</div>
+
+<div class="actions">
+    <a class="back" href="index.php?controller=phieuNhapXuat&action=xuatkhotp">⬅ Quay lại danh sách</a>
+    <button type="submit">✅ Xác nhận</button>
+</div>
+
 </form>
+</div>
 
-<script type="text/javascript">
-function layThongTinDonHang() {
-    var select = document.getElementById('maDonHang');
-    var opt = select.options[select.selectedIndex];
-    if (opt && opt.value != '') {
-        document.getElementById('maTP').value = opt.getAttribute('data-maTP');
-        document.getElementById('tenTP').value = opt.getAttribute('data-tenTP');
-        document.getElementById('soLuong').value = opt.getAttribute('data-soluong');
+<script>
+function fillTP() {
+    var sel = document.getElementById('maTP');
+    var opt = sel.options[sel.selectedIndex];
+
+    if (opt.value !== '') {
+        document.getElementById('tenTP').value = opt.getAttribute('data-ten');
+        document.getElementById('maKeHoach').value = opt.getAttribute('data-kehoach');
+        document.getElementById('maXuong').value = opt.getAttribute('data-xuong');
+        document.getElementById('soLuongTon').value = opt.getAttribute('data-soluong');
+        document.getElementById('soLuongTonHidden').value = opt.getAttribute('data-soluong');
     } else {
-        document.getElementById('maTP').value = '';
         document.getElementById('tenTP').value = '';
-        document.getElementById('soLuong').value = '';
+        document.getElementById('maKeHoach').value = '';
+        document.getElementById('maXuong').value = '';
+        document.getElementById('soLuongTon').value = '';
+        document.getElementById('soLuongTonHidden').value = '';
     }
 }
 </script>

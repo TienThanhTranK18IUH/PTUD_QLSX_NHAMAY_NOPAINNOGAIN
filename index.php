@@ -8,7 +8,7 @@ if (!ob_get_level()) {
     ob_start();
 }
 
-// 🟢 Bắt đầu session
+// 🟢 Bắt đầu sessiona
 if (session_id() === '') {
     session_start();
 }

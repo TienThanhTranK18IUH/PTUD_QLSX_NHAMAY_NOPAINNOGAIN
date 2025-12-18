@@ -8,18 +8,25 @@ class PhieuNhapKho {
         $this->db = new Database();
     }
 
-    // Lấy mã phiếu kế tiếp: PNTP001, PNTP002, ...
+    // =============================
+    // Lấy mã phiếu kế tiếp
+    // =============================
     public function getNextMaPhieu() {
-        $rows = $this->db->query("SELECT maPhieu FROM PhieuNhapKhoTP ORDER BY maPhieu DESC LIMIT 1");
+        $rows = $this->db->query(
+            "SELECT maPhieu FROM PhieuNhapKhoTP ORDER BY maPhieu DESC LIMIT 1"
+        );
+
         if (!empty($rows)) {
             $last = $rows[0]['maPhieu'];
-            $num = (int)substr($last, 4) + 1; // PNTP001 -> lấy phần số
+            $num  = intval(substr($last, 4)) + 1;
             return 'PNTP' . str_pad($num, 3, '0', STR_PAD_LEFT);
         }
         return 'PNTP001';
     }
 
+    // =============================
     // Danh sách phiếu nhập
+    // =============================
     public function getAllPhieu() {
         return $this->db->query("
             SELECT p.*, t.tenTP, k.tenKho, nd.hoTen AS nguoiLap
@@ -31,53 +38,78 @@ class PhieuNhapKho {
         ");
     }
 
-    // Danh sách kho thành phẩm
+    // =============================
+    // Danh sách kho TP
+    // =============================
     public function getAllKho() {
-        return $this->db->query("SELECT maKho, tenKho FROM Kho WHERE loaiKho = 'ThanhPham'");
-    }
-
-    // Danh sách thành phẩm chưa lập phiếu (ẩn TP đã lập)
-    public function getAllThanhPham() {
         return $this->db->query("
-            SELECT maTP, tenTP, soLuong 
-            FROM ThanhPham 
-            WHERE maTP NOT IN (SELECT maTP FROM PhieuNhapKhoTP)
+            SELECT maKho, tenKho
+            FROM Kho
+            WHERE loaiKho = 'ThanhPham'
         ");
     }
 
+    // =============================
+    // TP theo xưởng (CHỈ X001 | X002)
+    // =============================
+    public function getAllThanhPhamByXuong($maXuong) {
+
+        // Chặn giá trị lạ
+        if ($maXuong != 'X001' && $maXuong != 'X002') {
+            return array();
+        }
+
+        $sql = "
+            SELECT maTP, tenTP, soLuong
+            FROM ThanhPham
+            WHERE tinhTrang = 'Chờ kiểm tra'
+              AND maXuong = '$maXuong'
+        ";
+
+        return $this->db->query($sql);
+    }
+
+    // =============================
     // Kiểm tra TP đã lập phiếu chưa
+    // =============================
     public function checkExistTP($maTP) {
-        $rows = $this->db->query("SELECT maTP FROM PhieuNhapKhoTP WHERE maTP = '$maTP'");
+        $rows = $this->db->query("
+            SELECT maTP
+            FROM PhieuNhapKhoTP
+            WHERE maTP = '$maTP'
+        ");
         return !empty($rows);
     }
 
-    // Lưu phiếu nhập kho thành phẩm
+    // =============================
+    // Lưu phiếu nhập kho
+    // =============================
     public function create($data) {
+
         $maPhieu    = $data['maPhieu'];
         $maKho      = $data['maKho'];
+        $maTP       = $data['maTP'];
+        $soLuong    = intval($data['soLuong']);
         $ngayNhap   = $data['ngayNhap'];
         $maNguoiLap = $data['maNguoiLap'];
         $trangThai  = $data['trangThai'];
-        $maTP       = $data['maTP'];
-        $soLuong    = (int)$data['soLuong'];
 
         $sql = "
-            INSERT INTO PhieuNhapKhoTP (maPhieu, maKho, ngayNhap, maNguoiLap, trangThai, maTP, soLuong)
-            VALUES ('$maPhieu', '$maKho', '$ngayNhap', '$maNguoiLap', N'$trangThai', '$maTP', $soLuong)
+            INSERT INTO PhieuNhapKhoTP
+            (maPhieu, maKho, ngayNhap, maNguoiLap, trangThai, maTP, soLuong)
+            VALUES
+            ('$maPhieu', '$maKho', '$ngayNhap', '$maNguoiLap', '$trangThai', '$maTP', $soLuong)
         ";
 
-        // Tạo kết nối riêng cho INSERT
         $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
         $conn->set_charset(DB_CHARSET);
-        $result = $conn->query($sql);
 
-        if ($result === TRUE) {
+        if ($conn->query($sql)) {
             return true;
-        } else {
-            echo "<pre style='color:red;'>❌ Lỗi SQL: $sql</pre>";
-            echo "<pre style='color:red;'>MySQL báo: " . $conn->error . "</pre>";
-            return false;
         }
+
+        echo "<pre style='color:red'>❌ SQL ERROR: {$conn->error}</pre>";
+        return false;
     }
 }
 ?>

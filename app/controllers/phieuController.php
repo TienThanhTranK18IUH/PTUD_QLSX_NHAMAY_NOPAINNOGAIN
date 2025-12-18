@@ -196,14 +196,20 @@ class PhieuController {
     public function pnk_taoPhieu() {
     $modelPNK = new PhieuNhapKho($this->db);
     $title = 'Lập Phiếu Nhập Kho Thành Phẩm';
+
     $maPhieu = $modelPNK->getNextMaPhieu();
 
-    // Lấy tất cả thành phẩm
-    $allTP = $modelPNK->getAllThanhPham();
+    // ====== XƯỞNG (chỉ X001 | X002) ======
+    $maXuong = '';
+    if (isset($_GET['maXuong']) && ($_GET['maXuong'] == 'X001' || $_GET['maXuong'] == 'X002')) {
+        $maXuong = $_GET['maXuong'];
+    }
 
-    // Lọc ra những TP chưa lập phiếu
+    // ====== LẤY TP THEO XƯỞNG ======
     $dsThanhPham = array();
-    if (!empty($allTP)) {
+    if ($maXuong != '') {
+        $allTP = $modelPNK->getAllThanhPhamByXuong($maXuong);
+
         foreach ($allTP as $tp) {
             if (!$modelPNK->checkExistTP($tp['maTP'])) {
                 $dsThanhPham[] = $tp;
@@ -211,15 +217,15 @@ class PhieuController {
         }
     }
 
-    // Lấy tất cả kho
+    // ====== KHO ======
     $dsKho = $modelPNK->getAllKho();
 
-    // Lấy thông tin user hiện tại
+    // ====== USER ======
     $nguoiLap = '--';
     $maNguoiLap = '';
     if (!empty($_SESSION['user'])) {
-        $nguoiLap   = htmlspecialchars($_SESSION['user']['hoTen']);
-        $maNguoiLap = htmlspecialchars($_SESSION['user']['maNguoiDung']);
+        $nguoiLap   = $_SESSION['user']['hoTen'];
+        $maNguoiLap = $_SESSION['user']['maNguoiDung'];
     }
 
     include 'app/views/phieu/PhieuNhapKho.php';
@@ -273,6 +279,9 @@ public function pnk_luuPhieu() {
         $this->redirect('index.php?controller=phieu&action=pnk_taoPhieu&error=2');
     }
 }
+
+
+
 
 
 }

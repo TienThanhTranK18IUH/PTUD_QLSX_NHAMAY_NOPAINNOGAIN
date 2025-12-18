@@ -16,7 +16,7 @@ if (isset($_GET['ok']) && $_GET['ok'] == 1) {
     echo '<p class="alert success">✅ Phiếu nhập kho đã được lưu thành công!</p>';
 } elseif (isset($_GET['error'])) {
     $msg = '';
-    if ($_GET['error'] == 1) $msg = '❌ Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+    //if ($_GET['error'] == 1) $msg = '❌ Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
     if ($_GET['error'] == 2) $msg = '❌ Lỗi khi lưu dữ liệu vào cơ sở dữ liệu.';
     if ($_GET['error'] == 3) $msg = '❌ Thành phẩm này đã lập phiếu trước đó.';
     if($msg) echo '<p class="alert error">'.$msg.'</p>';
@@ -36,35 +36,52 @@ if (isset($_GET['ok']) && $_GET['ok'] == 1) {
         </div>
     </div>
 
-    <div class="row">
-        <div class="col">
-            <label>Kho:</label>
-            <select name="maKho" required>
-                <option value="">-- Chọn kho --</option>
-                <?php if (!empty($dsKho)) {
-                    foreach ($dsKho as $k) {
-                        $selected = ($k['maKho'] == 'K002') ? 'selected' : '';
-                        echo '<option value="'.htmlspecialchars($k['maKho']).'" '.$selected.'>'.htmlspecialchars($k['tenKho']).'</option>';
-                    }
-                } else {
-                    echo '<option disabled>⚠️ Không có kho khả dụng</option>';
-                } ?>
-            </select>
-        </div>
-        <div class="col">
-            <label>Thành phẩm:</label>
-            <select name="maTP" id="maTP" onchange="layThongTinTP()" required>
-                <option value="">-- Chọn thành phẩm --</option>
-                <?php if (!empty($dsThanhPham)) {
-                    foreach ($dsThanhPham as $tp) {
-                        echo '<option value="'.htmlspecialchars($tp['maTP']).'" data-ten="'.htmlspecialchars($tp['tenTP']).'" data-soluong="'.(int)$tp['soLuong'].'">'.htmlspecialchars($tp['tenTP']).'</option>';
-                    }
-                } else {
-                    echo '<option disabled>⚠️ Không có thành phẩm khả dụng</option>';
-                } ?>
-            </select>
-        </div>
+   <div class="row">
+    <div class="col">
+        <label>Kho:</label>
+        <select name="maKho" required>
+            <option value="">-- Chọn kho --</option>
+            <?php
+            if (!empty($dsKho)) {
+                foreach ($dsKho as $k) {
+                    $selected = ($k['maKho'] == 'K002') ? 'selected' : '';
+                    echo '<option value="'.$k['maKho'].'" '.$selected.'>'.$k['tenKho'].'</option>';
+                }
+            }
+            ?>
+        </select>
     </div>
+
+    <div class="row">
+    <div class="col">
+    <label>Xưởng:</label>
+    <select name="maXuong" onchange="doiXuong(this.value)" required>
+        <option value="">-- Chọn xưởng --</option>
+        <option value="X001" <?php if(isset($_GET['maXuong']) && $_GET['maXuong']=='X001') echo 'selected'; ?>>Xưởng X001</option>
+        <option value="X002" <?php if(isset($_GET['maXuong']) && $_GET['maXuong']=='X002') echo 'selected'; ?>>Xưởng X002</option>
+    </select>
+</div>
+</div>
+
+    <div class="col">
+        <label>Thành phẩm:</label>
+        <select name="maTP" id="maTP" onchange="layThongTinTP()" required>
+            <option value="">-- Chọn thành phẩm --</option>
+            <?php
+            if (!empty($dsThanhPham)) {
+                foreach ($dsThanhPham as $tp) {
+                    echo '<option value="'.$tp['maTP'].'"
+                        data-ten="'.$tp['tenTP'].'"
+                        data-soluong="'.$tp['soLuong'].'">
+                        '.$tp['tenTP'].'
+                    </option>';
+                }
+            }
+            ?>
+        </select>
+    </div>
+</div>
+
 
     <div class="row">
         <div class="col">
@@ -90,7 +107,7 @@ if (isset($_GET['ok']) && $_GET['ok'] == 1) {
             <label>Trạng thái:</label>
             <select name="trangThai">
                 <option value="Đã nhập">Đã nhập</option>
-                <option value="Chờ duyệt">Chờ duyệt</option>
+                
             </select>
         </div>
     </div>
@@ -225,3 +242,11 @@ function layThongTinTP() {
     }
 }
 </style>
+<script>
+function doiXuong(maXuong) {
+    if (maXuong !== '') {
+        window.location.href =
+            'index.php?controller=phieu&action=pnk_taoPhieu&maXuong=' + maXuong;
+    }
+}
+</script>
