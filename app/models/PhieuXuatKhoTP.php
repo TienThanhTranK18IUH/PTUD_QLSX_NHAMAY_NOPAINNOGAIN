@@ -9,19 +9,24 @@ class PhieuXuatKhoTP {
     }
 
     // Lấy danh sách thành phẩm Đạt
-    public function getThanhPhamDat() {
-        $sql = "SELECT maTP, tenTP, maKeHoach, maXuong, soLuong
-                FROM thanhpham
-                WHERE tinhTrang = 'Đạt'";
-        $result = $this->db->query($sql);
-        $data = array();
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $data[] = $row;
-            }
+   public function getThanhPhamDat() {
+    $sql = "SELECT tp.maTP, tp.tenTP, tp.maKeHoach, tp.maXuong, tp.soLuong
+            FROM thanhpham tp
+            WHERE tp.tinhTrang = 'Đạt'
+              AND tp.maTP NOT IN (
+                  SELECT maTP FROM phieuxuatkhotp
+              )
+            ORDER BY tp.tenTP ASC";
+
+    $result = $this->db->query($sql);
+    $data = array();
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
         }
-        return $data;
     }
+    return $data;
+}
 
     // Lấy danh sách phiếu xuất kho
     public function getDanhSachPhieu() {
