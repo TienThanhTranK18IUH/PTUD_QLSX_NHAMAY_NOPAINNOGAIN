@@ -62,36 +62,44 @@ class PhieuKTTP {
 
 
     public function addPhieuKT($data) {
-        $cols = $this->getTableColumns('phieukiemtrathanhpham');
+    $cols = $this->getTableColumns('phieukiemtrathanhpham');
 
-        $c_maPhieu  = isset($cols['maphieu']) ? $cols['maphieu'] : 'maPhieu';
-        $c_maTP     = isset($cols['matp']) ? $cols['matp'] : 'maTP';
-        $c_slkt     = $this->pick(array('sl_kiemtra','slkiemtra','soluongkiemtra'), $cols, 'SL_KiemTra');
-        $c_sldc     = $this->pick(array('sl_datchuan','sldatchuan','soluongdatchuan'), $cols, 'SL_DatChuan');
-        $c_ketqua   = isset($cols['ketqua']) ? $cols['ketqua'] : 'ketQua';
-        $c_ngaylap  = $this->pick(array('ngaylap','ngay_lap','created_at'), $cols, 'ngayLap');
-        $c_maQC     = $this->pick(array('manhanvienqc','ma_nhan_vien_qc','manvqc','maqc'), $cols, 'maNhanVienQC');
+    $c_maPhieu  = isset($cols['maphieu']) ? $cols['maphieu'] : 'maPhieu';
+    $c_maTP     = isset($cols['matp']) ? $cols['matp'] : 'maTP';
+    $c_slkt     = $this->pick(array('sl_kiemtra','slkiemtra','soluongkiemtra'), $cols, 'SL_KiemTra');
+    $c_sldc     = $this->pick(array('sl_datchuan','sldatchuan','soluongdatchuan'), $cols, 'SL_DatChuan');
+    $c_ketqua   = isset($cols['ketqua']) ? $cols['ketqua'] : 'ketQua';
+    $c_ghichu   = $this->pick(array('ghichu','ghi_chu','note'), $cols, 'ghiChu'); // 🔽 THÊM
+    $c_ngaylap  = $this->pick(array('ngaylap','ngay_lap','created_at'), $cols, 'ngayLap');
+    $c_maQC     = $this->pick(array('manhanvienqc','ma_nhan_vien_qc','manvqc','maqc'), $cols, 'maNhanVienQC');
 
-        $maPhieu      = $this->conn->real_escape_string($data['maPhieu']);
-        $maTP         = $this->conn->real_escape_string($data['maTP']);
-        $SL_KiemTra   = (int)$data['SL_KiemTra'];
-        $SL_DatChuan  = (int)$data['SL_DatChuan'];
-        $ketQua       = $this->conn->real_escape_string($data['ketQua']);
-        $ngayLap      = $this->conn->real_escape_string($data['ngayLap']);
-        $maNhanVienQC = $this->conn->real_escape_string($data['maNhanVienQC']);
+    $maPhieu      = $this->conn->real_escape_string($data['maPhieu']);
+    $maTP         = $this->conn->real_escape_string($data['maTP']);
+    $SL_KiemTra   = (int)$data['SL_KiemTra'];
+    $SL_DatChuan  = (int)$data['SL_DatChuan'];
+    $ketQua       = $this->conn->real_escape_string($data['ketQua']);
+    $ghiChu       = isset($data['ghiChu']) ? $this->conn->real_escape_string($data['ghiChu']) : null; // 🔽 THÊM
+    $ngayLap      = $this->conn->real_escape_string($data['ngayLap']);
+    $maNhanVienQC = $this->conn->real_escape_string($data['maNhanVienQC']);
 
-        if ($SL_DatChuan > $SL_KiemTra) return false;
+    if ($SL_DatChuan > $SL_KiemTra) return false;
 
-        $sql = "INSERT INTO phieukiemtrathanhpham
-                (`$c_maPhieu`,`$c_maTP`,`$c_slkt`,`$c_sldc`,`$c_ketqua`,`$c_ngaylap`,`$c_maQC`)
-                VALUES
-                ('$maPhieu', '$maTP', $SL_KiemTra, $SL_DatChuan, '$ketQua', '$ngayLap', '$maNhanVienQC')";
+    // 🔽 THÊM ghiChu vào INSERT
+    $sql = "INSERT INTO phieukiemtrathanhpham
+            (`$c_maPhieu`,`$c_maTP`,`$c_slkt`,`$c_sldc`,`$c_ketqua`,`$c_ghichu`,`$c_ngaylap`,`$c_maQC`)
+            VALUES
+            ('$maPhieu', '$maTP', $SL_KiemTra, $SL_DatChuan, '$ketQua', ".
+            ($ghiChu === null ? "NULL" : "'$ghiChu'").",
+            '$ngayLap', '$maNhanVienQC')";
 
-        $ok = $this->conn->query($sql);
-        if (!$ok) return false;
+    $ok = $this->conn->query($sql);
+    if (!$ok) return false;
 
-        $tinhTrang = ($ketQua === 'Đạt') ? 'Đạt' : 'Không đạt';
-        $this->conn->query("UPDATE thanhpham SET tinhTrang='{$tinhTrang}' WHERE maTP='{$maTP}'");
-        return true;
-    }
+    // cập nhật tình trạng thành phẩm
+    $tinhTrang = ($ketQua === 'Đạt') ? 'Đạt' : 'Không đạt';
+    $this->conn->query("UPDATE thanhpham SET tinhTrang='{$tinhTrang}' WHERE maTP='{$maTP}'");
+
+    return true;
+}
+
 }

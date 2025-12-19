@@ -133,55 +133,86 @@ class PhieuController {
         $this->redirect('index.php?controller=phieu&action=suachua');
     }
 
-    /* ================== PHIẾU KIỂM TRA THÀNH PHẨM ================== */
+   /* ================== PHIẾU KIỂM TRA THÀNH PHẨM ================== */
+
     public function kttp() {
         if (session_id() === '') session_start();
+
         $thanhPhams = $this->modelKTTP->getThanhPhamChoKiemTra();
         $maPhieu    = $this->modelKTTP->getNextMaPhieu();
-        $hoTenQC = $_SESSION['user']['hoTen'];
-        $nguoiQC = $_SESSION['user']['maNguoiDung'];
+        $hoTenQC    = $_SESSION['user']['hoTen'];
+        $nguoiQC    = $_SESSION['user']['maNguoiDung'];
+
         include 'app/views/phieu/kiemtra_TP.php';
     }
 
     public function create_kttp() {
-         // Kiểm tra đăng nhập
-    if (!isset($_SESSION['user'])) {
-        header("Location: index.php?controller=auth&action=login");
-        exit;
-    }
+
+        if (session_id() === '') session_start();
+
+        // Kiểm tra đăng nhập
+        if (!isset($_SESSION['user'])) {
+            header("Location: index.php?controller=auth&action=login");
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('index.php?controller=phieu&action=kttp');
-            return;
+            header("Location: index.php?controller=phieu&action=kttp");
+            exit;
         }
 
         $maQC = $_SESSION['user']['maNguoiDung'];
+
+        // 🔽 ĐÃ SỬA: nhận thêm ghiChu
         $data = array(
             'maPhieu'      => isset($_POST['maPhieu']) ? trim($_POST['maPhieu']) : '',
             'maTP'         => isset($_POST['maTP']) ? trim($_POST['maTP']) : '',
             'SL_KiemTra'   => isset($_POST['SL_KiemTra']) ? (int)$_POST['SL_KiemTra'] : 0,
             'SL_DatChuan'  => isset($_POST['SL_DatChuan']) ? (int)$_POST['SL_DatChuan'] : 0,
             'ketQua'       => isset($_POST['ketQua']) ? trim($_POST['ketQua']) : '',
+            'ghiChu'       => isset($_POST['ghiChu']) ? trim($_POST['ghiChu']) : null,
             'ngayLap'      => isset($_POST['ngayLap']) ? trim($_POST['ngayLap']) : date('Y-m-d'),
             'maNhanVienQC' => $maQC
         );
 
-        if ($data['maTP'] === '' || $data['maPhieu'] === '' || $data['SL_DatChuan'] > $data['SL_KiemTra']) {
-            $this->redirect('index.php?controller=phieu&action=kttp&error=1');
-            return;
+        // ❌ Kiểm tra dữ liệu bắt buộc
+        if (
+            $data['maPhieu'] === '' ||
+            $data['maTP'] === '' ||
+            $data['ketQua'] === '' ||
+            $data['SL_DatChuan'] > $data['SL_KiemTra']
+        ) {
+            header("Location: index.php?controller=phieu&action=kttp&error=1");
+            exit;
+        }
+
+        // ❌ Không đạt thì BẮT BUỘC có ghi chú
+        if ($data['ketQua'] === 'Không đạt' && empty($data['ghiChu'])) {
+            header("Location: index.php?controller=phieu&action=kttp&error=1");
+            exit;
         }
 
         $ok = $this->modelKTTP->addPhieuKT($data);
-        $this->redirect('index.php?controller=phieu&action=kttp'.($ok?'&success=1':'&error=1'));
+
+        header("Location: index.php?controller=phieu&action=kttp".($ok ? "&success=1" : "&error=1"));
+        exit;
     }
 
-    /* AJAX */
+    /* ================== AJAX ================== */
+
     public function getSL() {
+        if (session_id() === '') session_start();
+
         while (ob_get_level() > 0) { @ob_end_clean(); }
+
         header('Content-Type: text/plain; charset=utf-8');
+
         $sl = 0;
-        if (isset($_POST['maTP'])) $sl = (int)$this->modelKTTP->getSLTheoTP($_POST['maTP']);
+        if (isset($_POST['maTP'])) {
+            $sl = (int)$this->modelKTTP->getSLTheoTP($_POST['maTP']);
+        }
+
         echo $sl;
-        flush();
         exit;
     }
 

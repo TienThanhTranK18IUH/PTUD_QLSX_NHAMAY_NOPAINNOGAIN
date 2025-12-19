@@ -15,7 +15,10 @@
             </div>
         <?php endif; ?>
 
-        <form action="index.php?controller=phieu&action=create_kttp" method="post">
+        <!-- 🔽 ĐÃ SỬA: thêm validate khi submit -->
+        <form action="index.php?controller=phieu&action=create_kttp" 
+              method="post"
+              onsubmit="return validateForm();">
 
             <!-- Mã phiếu -->
             <div style="display:flex;align-items:center;margin-bottom:15px;">
@@ -38,9 +41,9 @@
                 </select>
             </div>
 
-            <!-- Số lượng kiểm tra & đạt chuẩn & % -->
+            <!-- Số lượng -->
             <div style="display:flex;align-items:center;margin-bottom:15px; gap:10px;">
-                <label style="width:120px;">SL KIỂM TRA</label>
+                <label style="width:150px;">SL KIỂM TRA</label>
                 <input type="number" id="SL_KiemTra" name="SL_KiemTra" readonly
                     style="width:100px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;text-align:center;">
                 
@@ -53,18 +56,25 @@
                     style="width:80px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;background:#f1f5f9;text-align:center;">
             </div>
 
-
-            <!-- Kết quả kiểm tra -->
-            <div style="display:flex;align-items:center;margin-bottom:15px;">
+            <!-- 🔽 ĐÃ SỬA: Kết quả kiểm tra -->
+            <div style="display:flex;align-items:flex-start;margin-bottom:15px;">
                 <label style="width:160px;">KẾT QUẢ KIỂM TRA</label>
-                <div style="flex:1;">
-                    <span id="ketQuaBadge"
-                        style="display:inline-block;margin-left:15px;padding:5px 12px;border-radius:20px;
-                        background:#e2e8f0;color:#1e293b;font-weight:bold;">
-                        Chưa xác định
-                    </span>
 
-                    <input type="hidden" name="ketQua" id="ketQuaInput" value="">
+                <div style="flex:1;">
+                    <label style="margin-right:20px;">
+                        <input type="radio" name="ketQua" value="Đạt"> Đạt
+                    </label>
+
+                    <label>
+                        <input type="radio" name="ketQua" value="Không đạt"> Không đạt
+                    </label>
+
+                    <!-- 🔽 ĐÃ SỬA: Ghi chú chỉ hiện khi Không đạt -->
+                    <div id="ghiChuBox" style="margin-top:10px;display:none;">
+                        <textarea name="ghiChu" rows="3"
+                            placeholder="Nhập lý do không đạt..."
+                            style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;"></textarea>
+                    </div>
                 </div>
             </div>
 
@@ -105,16 +115,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var slKiemTra = document.getElementById('SL_KiemTra');
     var slDatChuan = document.getElementById('SL_DatChuan');
     var percentDat = document.getElementById('percentDat');
-    var badge = document.getElementById('ketQuaBadge');
-    var ketQuaInput = document.getElementById('ketQuaInput');
-    var radios = document.querySelectorAll("input[name='chonKetQua']");
+    var radiosKetQua = document.querySelectorAll("input[name='ketQua']");
+    var ghiChuBox = document.getElementById('ghiChuBox');
 
-    // Load SL kiểm tra từ server
+    // Load SL kiểm tra
     maTP.addEventListener('change', function() {
         var v = this.value;
         if (!v) {
             slKiemTra.value = '';
-            updateKetQua();
+            percentDat.value = '';
             return;
         }
 
@@ -124,15 +133,12 @@ document.addEventListener('DOMContentLoaded', function() {
         xhr.onload = function() {
             var m = xhr.responseText.match(/(\d+)/);
             slKiemTra.value = m ? parseInt(m[1], 10) : 0;
-            updateKetQua(); // tự cập nhật kết quả sau khi load
         };
         xhr.send('maTP=' + encodeURIComponent(v));
     });
 
-    // Cập nhật kết quả khi nhập SL đạt chuẩn
-    slDatChuan.addEventListener('input', updateKetQua);
-
-    function updateKetQua() {
+    // Tính % (KHÔNG tự quyết định đạt/không đạt)
+    slDatChuan.addEventListener('input', function() {
         var kt = parseInt(slKiemTra.value || '0', 10);
         var dc = parseInt(slDatChuan.value || '0', 10);
 
@@ -142,48 +148,25 @@ document.addEventListener('DOMContentLoaded', function() {
             dc = kt;
         }
 
-        if (kt === 0) {
-            badge.innerText = "Chưa xác định";
-            badge.style.background = "#e2e8f0";
-            badge.style.color = "#1e293b";
-            ketQuaInput.value = "";
-            percentDat.value = "";
-            radios.forEach(r => r.checked = false);
-            return;
-        }
+        percentDat.value = kt > 0 ? Math.round((dc / kt) * 100) + " %" : "";
+    });
 
-        var percent = Math.round((dc / kt) * 100);
-        percentDat.value = percent + " %"; // cập nhật ô % đạt
-
-        if (percent >= 90) {
-            setKetQua("Đạt");
-        } else {
-            setKetQua("Không đạt");
-        }
-    }
-
-    function setKetQua(val) {
-        ketQuaInput.value = val;
-        badge.innerText = val;
-        if (val === "Đạt") {
-            badge.style.background = "#d1fae5";
-            badge.style.color = "#065f46";
-        } else {
-            badge.style.background = "#fee2e2";
-            badge.style.color = "#b91c1c";
-        }
-
-        // Đồng bộ radio
-        var radio = document.querySelector("input[name='chonKetQua'][value='" + val + "']");
-        if (radio) radio.checked = true;
-    }
-
-    // Radio vẫn có thể chỉnh thủ công
-    radios.forEach(function(radio) {
-        radio.addEventListener('change', function() {
-            setKetQua(this.value);
+    // Hiện ghi chú khi Không đạt
+    radiosKetQua.forEach(function(radio){
+        radio.addEventListener('change', function(){
+            ghiChuBox.style.display = (this.value === 'Không đạt') ? 'block' : 'none';
         });
     });
 
 });
+
+// Validate bắt buộc chọn kết quả
+function validateForm() {
+    var checked = document.querySelector("input[name='ketQua']:checked");
+    if (!checked) {
+        alert("⚠ Vui lòng chọn kết quả kiểm tra!");
+        return false;
+    }
+    return true;
+}
 </script>
