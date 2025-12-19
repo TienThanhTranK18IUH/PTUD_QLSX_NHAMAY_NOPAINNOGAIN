@@ -89,12 +89,11 @@ class PhanCongCongViecSanXuat {
     }
 
     /* --------- 4) Lưu phân công --------- */
-    public function luuPhanCong($maNguoiDung, $maKeHoach, $maCa, $maXuong, $moTaCongViec, $soLuong, $ngayBatDau, $ngayKetThuc) {
+    public function luuPhanCong($maNguoiDung, $maCa, $maXuong, $moTaCongViec, $soLuong, $ngayBatDau, $ngayKetThuc) {
         $tbl = $this->pickTable(array('phancong','PhanCong','phan_cong'));
         if ($tbl==='') $tbl = 'phancong';
 
         $maNguoiDung  = addslashes($maNguoiDung);
-        $maKeHoach    = addslashes($maKeHoach);
         $maCa         = addslashes($maCa);
         $maXuong      = addslashes($maXuong);
         $moTaCongViec = addslashes($moTaCongViec);
@@ -103,8 +102,8 @@ class PhanCongCongViecSanXuat {
         $ngayKetThuc  = addslashes($ngayKetThuc);
 
         $this->db->query("INSERT INTO {$tbl}
-            (maNguoiDung, maKeHoach, maCa, maXuong, moTaCongViec, soLuong, ngayBatDau, ngayKetThuc)
-            VALUES ('{$maNguoiDung}','{$maKeHoach}','{$maCa}','{$maXuong}','{$moTaCongViec}',{$soLuong},'{$ngayBatDau}','{$ngayKetThuc}')");
+            (maNguoiDung, maCa, maXuong, moTaCongViec, soLuong, ngayBatDau, ngayKetThuc)
+            VALUES ('{$maNguoiDung}','{$maCa}','{$maXuong}','{$moTaCongViec}',{$soLuong},'{$ngayBatDau}','{$ngayKetThuc}')");
         return true;
     }
 

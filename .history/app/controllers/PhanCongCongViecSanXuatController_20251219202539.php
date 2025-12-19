@@ -33,9 +33,7 @@ class PhanCongCongViecSanXuatController {
             return $this->index();
         }
 
-
         $maNguoiDung  = isset($_POST['maNguoiDung']) ? $_POST['maNguoiDung'] : '';
-        $maKeHoach    = isset($_POST['maKeHoach']) ? $_POST['maKeHoach'] : '';
         $maCa         = isset($_POST['maCa']) ? $_POST['maCa'] : '';
         $maXuong      = isset($_POST['maXuong']) ? $_POST['maXuong'] : '';
         $moTaCongViec = isset($_POST['moTaCongViec']) ? $_POST['moTaCongViec'] : '';
@@ -44,7 +42,7 @@ class PhanCongCongViecSanXuatController {
         $ngayKetThuc  = isset($_POST['ngayKetThuc']) ? $_POST['ngayKetThuc'] : '';
 
         $ok = $this->model->luuPhanCong(
-            $maNguoiDung, $maKeHoach, $maCa, $maXuong, $moTaCongViec, $soLuong, $ngayBatDau, $ngayKetThuc
+            $maNguoiDung, $maCa, $maXuong, $moTaCongViec, $soLuong, $ngayBatDau, $ngayKetThuc
         );
 
         // Use PRG: redirect to index so the normal layout (header/sidebar/footer)

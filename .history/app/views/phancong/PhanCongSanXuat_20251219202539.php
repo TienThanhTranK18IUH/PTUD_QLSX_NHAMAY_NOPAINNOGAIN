@@ -62,7 +62,6 @@ if (isset($_GET['msg'])) {
             <?php if (!empty($keHoachList)): foreach ($keHoachList as $kh): ?>
               <option
                 value="<?php echo htmlspecialchars($kh['maXuong']); ?>"
-                data-makehoach="<?php echo htmlspecialchars($kh['maKeHoach']); ?>"
                 data-tongsoluong="<?php echo isset($kh['tongSoLuong']) ? htmlspecialchars($kh['tongSoLuong']) : 0; ?>"
                 data-batdau="<?php echo htmlspecialchars($kh['ngayBatDau']); ?>"
                 data-ketthuc="<?php echo htmlspecialchars($kh['ngayKetThuc']); ?>"
@@ -70,8 +69,6 @@ if (isset($_GET['msg'])) {
                 <?php echo htmlspecialchars($kh['maKeHoach'].' - Xưởng '.$kh['maXuong']); ?>
               </option>
             <?php endforeach; endif; ?>
-            <!-- Hidden field for maKeHoach -->
-            <input type="hidden" id="hiddenMaKeHoach" name="maKeHoach" value="">
           </select>
         </div>
 
@@ -152,9 +149,7 @@ function capNhatThongTinKeHoach() {
   if (!option) return;
 
   var maXuong = option.value || '';
-  var maKeHoach = option.getAttribute('data-makehoach') || '';
   document.getElementById('maXuong').value     = maXuong;
-  document.getElementById('hiddenMaKeHoach').value = maKeHoach;
   document.getElementById('soLuong').value     = option.getAttribute('data-tongsoluong') || 0;
   document.getElementById('ngayBatDau').value  = option.getAttribute('data-batdau') || '';
   document.getElementById('ngayKetThuc').value = option.getAttribute('data-ketthuc') || '';
