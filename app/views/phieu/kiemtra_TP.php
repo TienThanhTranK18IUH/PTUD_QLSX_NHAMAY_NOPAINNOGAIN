@@ -72,7 +72,7 @@
                     <!-- 🔽 ĐÃ SỬA: Ghi chú chỉ hiện khi Không đạt -->
                     <div id="ghiChuBox" style="margin-top:10px;display:none;">
                         <textarea name="ghiChu" rows="3"
-                            placeholder="Nhập lý do không đạt..."
+                            placeholder="Nhập lý do không đạt...và đề xuất xử lý..."
                             style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;"></textarea>
                     </div>
                 </div>
