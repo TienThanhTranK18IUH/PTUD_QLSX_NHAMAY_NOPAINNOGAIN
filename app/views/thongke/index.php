@@ -1,153 +1,127 @@
+<h2 style="text-align:center;">📊 THỐNG KÊ SẢN XUẤT</h2>
+
+<form method="get" style="text-align:center;margin-bottom:20px;">
+    <input type="hidden" name="controller" value="thongke">
+    <input type="hidden" name="action" value="index">
+
+    Từ ngày:
+    <input type="date" name="from" value="<?php echo $from; ?>">
+    Đến ngày:
+    <input type="date" name="to" value="<?php echo $to; ?>">
+
+    <button type="submit">Xem thống kê</button>
+</form>
+
+<hr>
+
 <?php
-// app/views/thongke/index.php
+$dat = isset($chartPie['Đạt']) ? (int)$chartPie['Đạt'] : 0;
+$khongDat = isset($chartPie['Không đạt']) ? (int)$chartPie['Không đạt'] : 0;
+$tongQC = $dat + $khongDat;
 ?>
 
-<div class="content" style="margin:20px; font-family: Arial, sans-serif;">
-    <h2>📊 Báo cáo phiếu kiểm tra & đơn hàng</h2>
+<h3 style="text-align:center;">🔍 QC THÀNH PHẨM</h3>
 
-    <form method="get" action="index.php" style="margin-bottom:15px;">
-        <input type="hidden" name="controller" value="thongKe">
-        <input type="hidden" name="action" value="index">
-        From: <input type="date" name="from" value="<?php echo $from; ?>">
-        To: <input type="date" name="to" value="<?php echo $to; ?>">
-        <button type="submit">Xem báo cáo</button>
-    </form>
-
-    <!-- Bảng phiếu QC -->
-    <h3>Bảng phiếu kiểm tra</h3>
-    <table border="1" cellpadding="6" style="width:100%; border-collapse: collapse;">
-        <tr>
-            <th>Mã phiếu</th><th>Mã TP</th><th>Tên TP</th>
-            <th>Số lượng kiểm tra</th><th>Số lượng đạt chuẩn</th>
-            <th>Kết quả</th><th>Ngày lập</th><th>Mã nhân viên QC</th>
-        </tr>
-        <?php if(!empty($phieuQC)) {
-            foreach($phieuQC as $row): ?>
-            <tr>
-                <td><?php echo $row['maPhieu']; ?></td>
-                <td><?php echo $row['maTP']; ?></td>
-                <td><?php echo $row['tenTP']; ?></td>
-                <td><?php echo $row['SL_KiemTra']; ?></td>
-                <td><?php echo $row['SL_DatChuan']; ?></td>
-                <td><?php echo $row['ketQua']; ?></td>
-                <td><?php echo $row['ngayLap']; ?></td>
-                <td><?php echo $row['maNhanVienQC']; ?></td>
-            </tr>
-        <?php endforeach;
-        } else { ?>
-            <tr><td colspan="8" style="text-align:center;">Không có dữ liệu</td></tr>
-        <?php } ?>
-    </table>
-
-    <!-- Bảng đơn hàng -->
-    <h3>Bảng đơn hàng</h3>
-    <table border="1" cellpadding="6" style="width:100%; border-collapse: collapse;">
-        <tr>
-            <th>Mã đơn</th><th>Ngày đặt</th><th>Ngày giao</th><th>Số lượng</th>
-            <th>Tình trạng</th><th>Mã SP</th><th>Tên SP</th><th>Kích cỡ</th><th>Màu sắc</th>
-        </tr>
-        <?php if(!empty($donHangTheoNgay)) {
-            foreach($donHangTheoNgay as $dh): ?>
-            <tr>
-                <td><?php echo $dh['maDonHang']; ?></td>
-                <td><?php echo $dh['ngayDat']; ?></td>
-                <td><?php echo $dh['ngayGiao']; ?></td>
-                <td><?php echo $dh['soLuong']; ?></td>
-                <td><?php echo $dh['tinhTrang']; ?></td>
-                <td><?php echo $dh['maSP']; ?></td>
-                <td><?php echo $dh['tenSP']; ?></td>
-                <td><?php echo $dh['kichCo']; ?></td>
-                <td><?php echo $dh['mauSac']; ?></td>
-            </tr>
-        <?php endforeach;
-        } else { ?>
-            <tr><td colspan="9" style="text-align:center;">Không có dữ liệu</td></tr>
-        <?php } ?>
-    </table>
-
-    <!-- Biểu đồ -->
-    <h3>Biểu đồ</h3>
-    <div style="display:flex; justify-content:space-between; gap:20px;">
-        <!-- Biểu đồ tròn QC -->
-        <canvas id="pieChart" width="400" height="300" style="border:1px solid #ddd; border-radius:6px; padding:5px;"></canvas>
-        <!-- Biểu đồ đường đơn hàng -->
-        <canvas id="lineChart" width="400" height="300" style="border:1px solid #ddd; border-radius:6px; padding:5px;"></canvas>
+<?php if ($tongQC == 0): ?>
+    <p style="text-align:center;color:red;">Không có dữ liệu QC</p>
+<?php else: ?>
+    <div style="width:260px;margin:10px auto;">
+        <canvas id="qcChart"></canvas>
     </div>
-</div>
+
+    <table border="1" cellpadding="6" cellspacing="0" width="45%" style="margin:auto;">
+        <tr style="background:#f2f2f2;text-align:center;">
+            <th>Số lượng đơn hàng</th>
+            
+            <th>Tỷ lệ (%)</th>
+        </tr>
+        <tr style="text-align:center;">
+            <td style="color:#4CAF50;">Đạt</td>
+            <td><?php echo $dat; ?></td>
+            <td><?php echo round($dat/$tongQC*100,1); ?>%</td>
+        </tr>
+        <tr style="text-align:center;">
+            <td style="color:#F44336;">Không đạt</td>
+            <td><?php echo $khongDat; ?></td>
+            <td><?php echo round($khongDat/$tongQC*100,1); ?>%</td>
+        </tr>
+    </table>
+<?php endif; ?>
+
+<hr>
+
+<h3>📦 ĐƠN HÀNG THEO THÁNG</h3>
+
+<table border="1" cellpadding="8" cellspacing="0" width="90%">
+    <tr style="background:#f2f2f2;text-align:center;">
+        <th>Tháng</th>
+        <th>Tổng đơn</th>
+        <th>Đơn hàng đã hoàn thành</th>
+        <th>Đơn chưa hoàn thành</th>
+        <th>Chênh lệch so với tháng trước</th>
+        <th>Xu hướng</th>
+    </tr>
+
+<?php
+$prevTong = null;
+
+if (empty($donHangTheoThang)):
+?>
+    <tr>
+        <td colspan="6" style="text-align:center;color:red;">Không có dữ liệu</td>
+    </tr>
+<?php
+else:
+foreach ($donHangTheoThang as $row):
+    $chenh = ($prevTong === null) ? 0 : $row['tongDon'] - $prevTong;
+?>
+    <tr style="text-align:center;">
+        <td><?php echo date('m/Y', strtotime($row['thang'].'-01')); ?></td>
+        <td><?php echo $row['tongDon']; ?></td>
+        <td style="color:green;font-weight:bold;"><?php echo $row['donDat']; ?></td>
+        <td style="color:red;"><?php echo $row['donChuaDat']; ?></td>
+        <td>
+            <?php
+                if ($chenh > 0) echo '+'.$chenh;
+                else echo $chenh;
+            ?>
+        </td>
+        <td>
+            <?php
+                if ($chenh > 0) echo '<span style="color:green;">▲ Tăng</span>';
+                elseif ($chenh < 0) echo '<span style="color:red;">▼ Giảm</span>';
+                else echo '—';
+            ?>
+        </td>
+    </tr>
+<?php
+    $prevTong = $row['tongDon'];
+endforeach;
+endif;
+?>
+</table>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Biểu đồ tròn QC
-var ctxPie = document.getElementById('pieChart').getContext('2d');
-var datat = {
-    'Đạt': <?php echo isset($chartPie['Đạt']) ? $chartPie['Đạt'] : 0; ?>,
-    'Không đạt': <?php echo isset($chartPie['Không đạt']) ? $chartPie['Không đạt'] : 0; ?>
-};
-var pieData = {
-    labels: ['Đạt', 'Không đạt'],
-    datasets: [{
-        data: [datat['Đạt'], datat['Không đạt']],
-        backgroundColor: ['rgba(75, 192, 192, 0.7)','rgba(255, 99, 132, 0.7)']
-    }]
-};
-new Chart(ctxPie, { type: 'pie', data: pieData, options: {
-    responsive: false,
-    plugins: { legend:{position:'right',labels:{boxWidth:12,padding:8}},
-        tooltip: { callbacks: { label: function(context){
-            var total = datat['Đạt'] + datat['Không đạt'];
-            var value = context.raw;
-            var percent = total ? ((value/total)*100).toFixed(1) : 0;
-            return context.label + ': ' + value + ' ('+percent+'%)';
-        }}}}}});
+window.onload = function () {
+    var dat = <?php echo $dat; ?>;
+    var khongDat = <?php echo $khongDat; ?>;
+    if (dat === 0 && khongDat === 0) return;
 
-// Biểu đồ đường đơn hàng
-// Biểu đồ đường đơn hàng
-var ctxLine = document.getElementById('lineChart').getContext('2d');
-
-var labels = [
-    <?php foreach($chartDonHang as $dh) { echo "'".$dh['ngayDat']."',"; } ?>
-];
-
-var tongDH = [
-    <?php foreach($chartDonHang as $dh) { echo $dh['tongDH'].','; } ?>
-];
-
-var dhHoanThanh = [
-    <?php foreach($chartDonHang as $dh) { echo $dh['dhHoanThanh'].','; } ?>
-];
-
-var dhChuaHoanThanh = [
-    <?php foreach($chartDonHang as $dh) { echo $dh['dhChuaHoanThanh'].','; } ?>
-];
-
-new Chart(ctxLine, {
-    type: 'line',
-    data: {
-        labels: labels,
-        datasets: [
-            {
-                label: 'Tổng đơn',
-                data: tongDH,
-                borderColor:'rgba(54,162,235,0.8)',
-                fill:false
-            },
-            {
-                label: 'Đã giao',
-                data: dhHoanThanh,
-                borderColor:'rgba(75,192,192,0.8)',
-                fill:false
-            },
-            {
-                label: 'Chưa giao',
-                data: dhChuaHoanThanh,
-                borderColor:'rgba(255,99,132,0.8)',
-                fill:false
+    new Chart(document.getElementById('qcChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Đạt', 'Không đạt'],
+            datasets: [{
+                data: [dat, khongDat],
+                backgroundColor: ['#4CAF50', '#F44336']
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'bottom' }
             }
-        ]
-    },
-    options: {
-        responsive: false,
-        plugins: { legend:{position:'top'} }
-    }
-});
+        }
+    });
+};
 </script>
