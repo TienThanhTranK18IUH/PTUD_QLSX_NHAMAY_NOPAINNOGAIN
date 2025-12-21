@@ -167,12 +167,13 @@ button:hover {
             <option value="">-- Chọn thành phẩm --</option>
             <?php foreach ($dsTP as $tp): ?>
             <option value="<?php echo $tp['maTP']; ?>"
-                data-ten="<?php echo $tp['tenTP']; ?>"
-                data-kehoach="<?php echo $tp['maKeHoach']; ?>"
-                data-xuong="<?php echo $tp['maXuong']; ?>"
-                data-soluong="<?php echo $tp['soLuong']; ?>">
-                <?php echo $tp['maTP']; ?> - <?php echo $tp['tenTP']; ?>
-            </option>
+    data-ten="<?php echo htmlspecialchars($tp['tenTP'], ENT_QUOTES, 'UTF-8'); ?>"
+    data-kehoach="<?php echo $tp['maKeHoach']; ?>"
+    data-xuong="<?php echo $tp['maXuong']; ?>"
+    data-soluong="<?php echo $tp['soLuong']; ?>"
+    data-donhang="<?php echo htmlspecialchars(json_encode($tp['donhang']), ENT_QUOTES, 'UTF-8'); ?>">
+    <?php echo $tp['maTP']; ?> - <?php echo $tp['tenTP']; ?>
+</option>
             <?php endforeach; ?>
         </select>
     </div>
@@ -187,6 +188,15 @@ button:hover {
         <label>Mã kế hoạch</label>
         <input type="text" id="maKeHoach" readonly>
     </div>
+</div>
+
+<div class="row">
+    <div class="col">
+<label>Mã đơn hàng</label>
+<select name="maDonHang" id="maDonHang" required>
+    <option value="">-- Chọn đơn hàng --</option>
+</select>
+ </div>
 </div>
 
 <div class="row">
@@ -217,22 +227,37 @@ button:hover {
 </div>
 
 <script>
+
 function fillTP() {
     var sel = document.getElementById('maTP');
     var opt = sel.options[sel.selectedIndex];
 
-    if (opt.value !== '') {
-        document.getElementById('tenTP').value = opt.getAttribute('data-ten');
-        document.getElementById('maKeHoach').value = opt.getAttribute('data-kehoach');
-        document.getElementById('maXuong').value = opt.getAttribute('data-xuong');
-        document.getElementById('soLuongTon').value = opt.getAttribute('data-soluong');
-        document.getElementById('soLuongTonHidden').value = opt.getAttribute('data-soluong');
-    } else {
-        document.getElementById('tenTP').value = '';
-        document.getElementById('maKeHoach').value = '';
-        document.getElementById('maXuong').value = '';
-        document.getElementById('soLuongTon').value = '';
-        document.getElementById('soLuongTonHidden').value = '';
-    }
+    if (!sel.value) return;
+
+    document.getElementById('tenTP').value = opt.dataset.ten;
+    document.getElementById('maKeHoach').value = opt.dataset.kehoach;
+    document.getElementById('maXuong').value = opt.dataset.xuong;
+    document.getElementById('soLuongTon').value = opt.dataset.soluong;
+    document.getElementById('soLuongTonHidden').value = opt.dataset.soluong;
+
+    var dsDonHang = JSON.parse(opt.dataset.donhang || "[]");
+    var selectDH = document.getElementById('maDonHang');
+
+    selectDH.innerHTML = '<option value="">-- Chọn đơn hàng --</option>';
+
+    dsDonHang.forEach(function(dh, index){
+        var o = document.createElement('option');
+        o.value = dh.maDonHang;
+        o.textContent = dh.maDonHang + ' - ' + dh.tenSP;
+
+        // ⭐ AUTO CHỌN ĐƠN HÀNG ĐẦU TIÊN
+        if (index === 0) {
+            o.selected = true;
+        }
+
+        selectDH.appendChild(o);
+    });
 }
+
+
 </script>

@@ -216,100 +216,92 @@ class PhieuController {
         exit;
     }
 
-    /* ================== PHIẾU NHẬP KHO THÀNH PHẨM ================== */
+   /* ================== PHIẾU NHẬP KHO THÀNH PHẨM ================== */
+
+/* ================== DANH SÁCH PHIẾU ================== */
     public function pnk_index() {
-        $modelPNK = new PhieuNhapKho($this->db);
+        $modelPNK = new PhieuNhapKho();
         $title = 'Danh sách Phiếu Nhập Kho Thành Phẩm';
         $dsPhieu = $modelPNK->getAllPhieu();
         include 'app/views/phieu/danhSachPhieu.php';
     }
 
+    /* ================== LẬP PHIẾU ================== */
     public function pnk_taoPhieu() {
-    $modelPNK = new PhieuNhapKho($this->db);
-    $title = 'Lập Phiếu Nhập Kho Thành Phẩm';
+        $modelPNK = new PhieuNhapKho();
+        $title = 'Lập Phiếu Nhập Kho Thành Phẩm';
 
-    $maPhieu = $modelPNK->getNextMaPhieu();
+        // Mã phiếu mới
+        $maPhieu = $modelPNK->getNextMaPhieu();
 
-    // ====== XƯỞNG (chỉ X001 | X002) ======
-    $maXuong = '';
-    if (isset($_GET['maXuong']) && ($_GET['maXuong'] == 'X001' || $_GET['maXuong'] == 'X002')) {
-        $maXuong = $_GET['maXuong'];
+        // TP đạt chuẩn chưa lập phiếu
+        $dsThanhPham = $modelPNK->getThanhPhamDatChuan();
+
+        // Kho thành phẩm
+        $dsKho = $modelPNK->getAllKho();
+
+        // Thông tin user
+        $nguoiLap = '--';
+        $maNguoiLap = '';
+        if (!empty($_SESSION['user'])) {
+            $nguoiLap = $_SESSION['user']['hoTen'];
+            $maNguoiLap = $_SESSION['user']['maNguoiDung'];
+        }
+
+        include 'app/views/phieu/PhieuNhapKho.php';
     }
 
-    // ====== LẤY TP THEO XƯỞNG ======
-    $dsThanhPham = array();
-    if ($maXuong != '') {
-        $allTP = $modelPNK->getAllThanhPhamByXuong($maXuong);
+    /* ================== LƯU PHIẾU ================== */
+    public function pnk_luuPhieu() {
+        $modelPNK = new PhieuNhapKho();
 
-        foreach ($allTP as $tp) {
-            if (!$modelPNK->checkExistTP($tp['maTP'])) {
-                $dsThanhPham[] = $tp;
-            }
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->goTo('index.php?controller=phieu&action=pnk_index');
+        }
+
+        $maPhieu = isset($_POST['maPhieu']) ? trim($_POST['maPhieu']) : '';
+        $maTP    = isset($_POST['maTP']) ? trim($_POST['maTP']) : '';
+        $maKho   = isset($_POST['maKho']) ? trim($_POST['maKho']) : 'K002';
+        $soLuong = isset($_POST['soLuong']) ? intval($_POST['soLuong']) : 0;
+
+        $maNguoiLap = !empty($_SESSION['user']) ? $_SESSION['user']['maNguoiDung'] : 'ND004';
+        $ngayNhap = date('Y-m-d');
+
+        // Validate dữ liệu
+        if ($maPhieu == '' || $maTP == '' || $soLuong <= 0) {
+            $this->goTo('index.php?controller=phieu&action=pnk_taoPhieu&error=1');
+        }
+
+        // 1 TP chỉ nhập kho 1 lần
+        if ($modelPNK->checkExistTP($maTP)) {
+            $this->goTo('index.php?controller=phieu&action=pnk_taoPhieu&error=3');
+        }
+
+        $data = array(
+            'maPhieu'    => $maPhieu,
+            'maTP'       => $maTP,
+            'maKho'      => $maKho,
+            'soLuong'    => $soLuong,
+            'ngayNhap'   => $ngayNhap,
+            'maNguoiLap' => $maNguoiLap,
+            'trangThai'  => 'Đã nhập'
+        );
+
+        $ok = $modelPNK->create($data);
+
+        if ($ok) {
+            $this->goTo('index.php?controller=phieu&action=pnk_index&ok=1');
+        } else {
+            $this->goTo('index.php?controller=phieu&action=pnk_taoPhieu&error=2');
         }
     }
 
-    // ====== KHO ======
-    $dsKho = $modelPNK->getAllKho();
-
-    // ====== USER ======
-    $nguoiLap = '--';
-    $maNguoiLap = '';
-    if (!empty($_SESSION['user'])) {
-        $nguoiLap   = $_SESSION['user']['hoTen'];
-        $maNguoiLap = $_SESSION['user']['maNguoiDung'];
+    /* ================== HÀM REDIRECT ================== */
+    private function goTo($url) {
+        header("Location: $url");
+        exit();
     }
 
-    include 'app/views/phieu/PhieuNhapKho.php';
-}
-
-public function pnk_luuPhieu() {
-    $modelPNK = new PhieuNhapKho($this->db);
-
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        $this->redirect('index.php?controller=phieu&action=pnk_index');
-    }
-
-    $maPhieu = isset($_POST['maPhieu']) ? trim($_POST['maPhieu']) : '';
-    $maTP    = isset($_POST['maTP']) ? trim($_POST['maTP']) : '';
-    $maKho   = isset($_POST['maKho']) ? trim($_POST['maKho']) : 'K002';
-    $soLuong = isset($_POST['soLuong']) ? intval($_POST['soLuong']) : 0;
-
-    // Lấy thông tin user hiện tại
-    if (!empty($_SESSION['user'])) {
-        $maNguoiLap = $_SESSION['user']['maNguoiDung'];
-    } else {
-        $maNguoiLap = 'ND004';
-    }
-
-    $ngayNhap = date('Y-m-d');
-
-    if ($maPhieu == '' || $maTP == '' || $soLuong <= 0) {
-        $this->redirect('index.php?controller=phieu&action=pnk_taoPhieu&error=1');
-    }
-
-    // Kiểm tra 1 thành phẩm chỉ lập 1 phiếu
-    if ($modelPNK->checkExistTP($maTP)) {
-        $this->redirect('index.php?controller=phieu&action=pnk_taoPhieu&error=3');
-    }
-
-    $data = array(
-        'maPhieu'    => $maPhieu,
-        'maTP'       => $maTP,
-        'maKho'      => $maKho,
-        'soLuong'    => $soLuong,
-        'ngayNhap'   => $ngayNhap,
-        'maNguoiLap' => $maNguoiLap,
-        'trangThai'  => 'Đã nhập'
-    );
-
-    $ok = $modelPNK->create($data);
-
-    if ($ok) {
-        $this->redirect('index.php?controller=phieu&action=pnk_index&ok=1');
-    } else {
-        $this->redirect('index.php?controller=phieu&action=pnk_taoPhieu&error=2');
-    }
-}
 
 
 

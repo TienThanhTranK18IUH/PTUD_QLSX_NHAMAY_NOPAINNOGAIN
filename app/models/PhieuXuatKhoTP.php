@@ -5,37 +5,70 @@ class PhieuXuatKhoTP {
     private $db;
 
     public function __construct($db) {
-        $this->db = $db; // $db là mysqli
+        $this->db = $db; // mysqli
     }
 
-    // Lấy danh sách thành phẩm Đạt
-   public function getThanhPhamDat() {
-    $sql = "SELECT tp.maTP, tp.tenTP, tp.maKeHoach, tp.maXuong, tp.soLuong
-            FROM thanhpham tp
-            WHERE tp.tinhTrang = 'Đạt'
-              AND tp.maTP NOT IN (
-                  SELECT maTP FROM phieuxuatkhotp
-              )
-            ORDER BY tp.tenTP ASC";
+    // ===============================
+    // Thành phẩm đạt
+    // ===============================
+    public function getThanhPhamDat() {
+
+    $sql = "SELECT maTP, tenTP, maKeHoach, maXuong, soLuong
+            FROM thanhpham
+            WHERE tinhTrang = 'Đạt'
+              AND soLuong > 0";
 
     $result = $this->db->query($sql);
     $data = array();
+
     if ($result) {
         while ($row = $result->fetch_assoc()) {
+
+            // 🔥 LẤY ĐƠN HÀNG THEO maTP
+            $stmt = $this->db->prepare(
+                "SELECT maDonHang, tenSP
+                 FROM donhang
+                 WHERE maTP = ?"
+            );
+            $stmt->bind_param("s", $row['maTP']);
+            $stmt->execute();
+
+            $maDonHang = '';
+            $tenSP = '';
+            $stmt->bind_result($maDonHang, $tenSP);
+
+            $donhang = array();
+            while ($stmt->fetch()) {
+                $donhang[] = array(
+                    'maDonHang' => $maDonHang,
+                    'tenSP'     => $tenSP
+                );
+            }
+            $stmt->close();
+
+            // 🔥 GẮN DONHANG VÀO TP
+            $row['donhang'] = $donhang;
+
             $data[] = $row;
         }
     }
+
     return $data;
 }
 
-    // Lấy danh sách phiếu xuất kho
+    // ===============================
+    // Danh sách phiếu xuất
+    // ===============================
     public function getDanhSachPhieu() {
-        $sql = "SELECT px.maPhieu, px.ngayXuat, px.maNguoiLap, tp.tenTP, px.soLuong
+        $sql = "SELECT px.maPhieu, px.ngayXuat, px.maNguoiLap,
+                       tp.tenTP, px.soLuong
                 FROM phieuxuatkhotp px
                 JOIN thanhpham tp ON px.maTP = tp.maTP
                 ORDER BY px.ngayXuat DESC";
+
         $result = $this->db->query($sql);
         $data = array();
+
         if ($result) {
             while ($row = $result->fetch_assoc()) {
                 $data[] = $row;
@@ -44,37 +77,88 @@ class PhieuXuatKhoTP {
         return $data;
     }
 
-    // Sinh mã phiếu tự động PXTP001, PXTP002...
-    public function getNextMaPhieu() {
-        $sql = "SELECT maPhieu FROM phieuxuatkhotp ORDER BY maPhieu DESC LIMIT 1";
-        $result = $this->db->query($sql);
+    // ===============================
+    // Load đơn hàng theo mã TP
+    // ===============================
+    public function getDonHangByMaTP($maTP) {
+        $sql = "SELECT maDonHang, tenSP
+                FROM donhang
+                WHERE maTP = ?";
 
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("s", $maTP);
+        $stmt->execute();
+
+        $maDonHang = '';
+        $tenSP = '';
+        $stmt->bind_result($maDonHang, $tenSP);
+
+        $data = array();
+        while ($stmt->fetch()) {
+            $data[] = array(
+                'maDonHang' => $maDonHang,
+                'tenSP'     => $tenSP
+            );
+        }
+
+        $stmt->close();
+        return $data;
+    }
+
+    // ===============================
+    // Sinh mã phiếu
+    // ===============================
+    public function getNextMaPhieu() {
+        $sql = "SELECT maPhieu
+                FROM phieuxuatkhotp
+                ORDER BY maPhieu DESC
+                LIMIT 1";
+
+        $result = $this->db->query($sql);
         $last = '';
+
         if ($result && $result->num_rows > 0) {
             $row = $result->fetch_assoc();
             $last = $row['maPhieu'];
         }
 
-        if ($last) {
-            $num = (int)substr($last, 4) + 1; // Lấy phần số của PXTPxxx
-        } else {
-            $num = 1;
-        }
-
-        return 'PXTP'.str_pad($num, 3, '0', STR_PAD_LEFT);
+        $num = $last ? ((int)substr($last, 4) + 1) : 1;
+        return 'PXTP' . str_pad($num, 3, '0', STR_PAD_LEFT);
     }
 
+    // ===============================
     // Lưu phiếu
+    // ===============================
     public function insertPhieu($data) {
-        $stmt = $this->db->prepare("INSERT INTO phieuxuatkhotp (maPhieu, maKho, ngayXuat, maNguoiLap, maTP, soLuong) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssssi", $data['maPhieu'], $data['maKho'], $data['ngayXuat'], $data['maNguoiLap'], $data['maTP'], $data['soLuong']);
+        $sql = "INSERT INTO phieuxuatkhotp
+                (maPhieu, maKho, ngayXuat, maNguoiLap,
+                 maDonHang, maTP, soLuong)
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param(
+            "ssssssi",
+            $data['maPhieu'],
+            $data['maKho'],
+            $data['ngayXuat'],
+            $data['maNguoiLap'],
+            $data['maDonHang'],
+            $data['maTP'],
+            $data['soLuong']
+        );
         $stmt->execute();
         $stmt->close();
     }
 
-    // Trừ số lượng tồn
+    // ===============================
+    // Trừ tồn kho
+    // ===============================
     public function truSoLuong($maTP, $soLuong) {
-        $stmt = $this->db->prepare("UPDATE thanhpham SET soLuong = soLuong - ? WHERE maTP = ?");
+        $stmt = $this->db->prepare(
+            "UPDATE thanhpham
+             SET soLuong = soLuong - ?
+             WHERE maTP = ?"
+        );
         $stmt->bind_param("is", $soLuong, $maTP);
         $stmt->execute();
         $stmt->close();

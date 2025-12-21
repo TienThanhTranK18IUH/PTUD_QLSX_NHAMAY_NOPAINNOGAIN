@@ -184,9 +184,9 @@ class="<?php echo nav_active($cl==='phancongcongviecsanxuat' || $cl==='PhanCongC
                         </a>
                     </li>
                     <li>
-                        <a href="index.php?controller=PhanCongDoiCa"
-                            class="<?php echo nav_active($cl==='phancongdoica' || $cl==='PhanCongDoiCa'); ?>">
-                            🔄 Phân công, đổi ca công việc cho công nhân
+                        <a href="index.php?controller=DoiCa"
+                            class="<?php echo nav_active($cl==='phancongdoica' || $cl==='DoiCa'); ?>">
+                            🔄 Đổi ca làm việc cho công nhân
                         </a>
                     </li>
                 </ul>
