@@ -77,8 +77,81 @@ class SanXuatController {
             $CA_MAP[$row['maCa']]=array(substr($row['thoiGianBatDau'],0,5), substr($row['thoiGianKetThuc'],0,5));
         }
 
-        $GLOBALS['XT']=array('maNguoiDung'=>$xt['maNguoiDung'],'hoTen'=>$xt['hoTen'],
-                             'tenXuong'=>isset($xt['tenXuong'])?$xt['tenXuong']:'','maXuong'=>$maXuong);
+
+
+        // Role-aware: nếu user là quản lý (manager) thì cho phép chọn xưởng trưởng và lọc công nhân
+        // Sử dụng session-based checkRole để tránh trường hợp col 'vaiTro' trong row bị trống/khác nhau
+        $isManager = checkRole('manager');
+
+        if ($isManager){
+            $dsXuongTruong = array();
+            if ($this->conn){
+                // Lấy tất cả người dùng đang hoạt động và lọc bằng normalizeRole để nhận diện leader (xưởng trưởng)
+                $q = "SELECT n.maNguoiDung, n.hoTen, n.tenXuong, n.vaiTro FROM nguoidung n WHERE n.trangThai='HoatDong' ORDER BY n.hoTen ASC";
+                $rs=$this->conn->query($q);
+                if($rs && $rs->num_rows>0){
+                    while($r=$rs->fetch_assoc()){
+                        if (normalizeRole(isset($r['vaiTro'])?$r['vaiTro']:'') === 'leader'){
+                            // tìm mã xưởng nếu có
+                            $r['maXuong'] = $this->getMaXuongByTen(isset($r['tenXuong'])?$r['tenXuong']:'');
+                            $dsXuongTruong[] = $r;
+                        }
+                    }
+                }
+
+                // Fallback: nếu không tìm thấy bằng vai trò, thử lấy theo tenXuong (người có tenXuong được coi là xưởng trưởng)
+                if (empty($dsXuongTruong)){
+                    $rs2 = $this->conn->query("SELECT maNguoiDung, hoTen, tenXuong, vaiTro FROM nguoidung WHERE tenXuong<>'' AND trangThai='HoatDong' ORDER BY tenXuong, hoTen");
+                    $seen = array();
+                    if ($rs2 && $rs2->num_rows>0){
+                        while($r2=$rs2->fetch_assoc()){
+                            $tx = trim($r2['tenXuong']);
+                            if ($tx==='' || isset($seen[$tx])) continue;
+                            $seen[$tx]=true;
+                            $r2['maXuong'] = $this->getMaXuongByTen($tx);
+                            $r2['vaiTro'] = 'XuongTruong';
+                            $dsXuongTruong[] = $r2;
+                        }
+                    }
+                }
+
+                // Diagnostic: if still empty, collect distinct vaiTro values and sample active users to help debugging
+                if (empty($dsXuongTruong)){
+                    $roles = array();
+                    $sample = array();
+                    $r3 = $this->conn->query("SELECT DISTINCT vaiTro FROM nguoidung WHERE trangThai='HoatDong'");
+                    if ($r3){ while($row=$r3->fetch_assoc()){ $roles[] = $row['vaiTro']; } }
+                    $r4 = $this->conn->query("SELECT maNguoiDung, hoTen, vaiTro, tenXuong FROM nguoidung WHERE trangThai='HoatDong' LIMIT 15");
+                    if ($r4){ while($row=$r4->fetch_assoc()){ $sample[] = $row; } }
+                    $GLOBALS['diagnostic_roles'] = $roles;
+                    $GLOBALS['diagnostic_sample_users'] = $sample;
+                }
+            }
+
+            // Chọn xưởng mặc định: nếu manager có tenXuong -> dùng, nếu không lấy xưởng đầu tiên
+            $selectedTen = isset($xt['tenXuong']) && $xt['tenXuong'] ? $xt['tenXuong'] : (isset($dsXuongTruong[0]) ? $dsXuongTruong[0]['tenXuong'] : '');
+            $selectedMaXuong = '';
+            if ($selectedTen){
+                $dsCongNhan = $this->mNhanVien->listByXuong($selectedTen);
+                // tìm mã xưởng tương ứng
+                foreach($dsXuongTruong as $s){ if ($s['tenXuong']===$selectedTen){ $selectedMaXuong = isset($s['maXuong'])?$s['maXuong']:''; break; } }
+            } else {
+                $dsCongNhan = array();
+            }
+
+            $GLOBALS['dsXuongTruong']=$dsXuongTruong;
+            $GLOBALS['selectedTenXuong']=$selectedTen;
+            $GLOBALS['selectedMaXuong']=$selectedMaXuong;
+        } else {
+            $GLOBALS['selectedTenXuong']=isset($xt['tenXuong'])?$xt['tenXuong']:'';
+            $GLOBALS['selectedMaXuong']=$maXuong;
+        }
+
+        $GLOBALS['isManager']=$isManager;
+        // allow cancel confirmation for leaders and managers
+        $GLOBALS['canCancel'] = checkRole(array('manager','leader'));
+
+        $GLOBALS['XT']=array('maNguoiDung'=>$xt['maNguoiDung'],'hoTen'=>$xt['hoTen'],'tenXuong'=>isset($xt['tenXuong'])?$xt['tenXuong']:'','maXuong'=>$maXuong);
         $GLOBALS['dsCongNhan']=$dsCongNhan;
         $GLOBALS['dsCa']=$dsCa;
         $GLOBALS['CA_MAP']=$CA_MAP;
@@ -91,8 +164,38 @@ class SanXuatController {
         include dirname(__FILE__).'/../views/sanxuat/ghinhan.php';
     }
 
+
+
+    public function getWorkers(){
+        // SUPPORT: accept POST requests for AJAX to avoid layout being included by front controller
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST'){
+            header('HTTP/1.1 405 Method Not Allowed');
+            header('Content-Type: application/json; charset=utf-8', true, 405);
+            echo json_encode(array('error'=>'method_not_allowed')); exit;
+        }
+
+        // Trả về JSON danh sách công nhân theo tenXuong (chỉ cho quản lý)
+        if (!checkRole(array('manager'))){
+            header('HTTP/1.1 403 Forbidden');
+            header('Content-Type: application/json; charset=utf-8', true, 403);
+            echo json_encode(array('error'=>'forbidden'));
+            exit;
+        }
+
+        $ten = isset($_POST['tenXuong']) ? trim($_POST['tenXuong']) : '';
+        if ($ten === ''){ header('Content-Type: application/json; charset=utf-8'); echo json_encode(array()); exit; }
+        $tenEsc = $this->conn ? $this->conn->real_escape_string($ten) : $ten;
+        $list = $this->mNhanVien->listByXuong($tenEsc);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($list);
+        exit;
+    }
+
     public function save(){
         requireRole(array('manager','leader'));
+        // Detect AJAX requests from fetch (we set X-Requested-With)
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+
         $maCN = isset($_POST['maNguoiDung'])?$_POST['maNguoiDung']:'';
         $tenCN=''; if ($maCN!=='' && $this->conn){
             $esc=$this->conn->real_escape_string($maCN);
@@ -114,12 +217,30 @@ class SanXuatController {
                 if($r && $r->num_rows>0) $xt=$r->fetch_assoc();
             }
         }
-        // Lấy maXuong từ tenXuong (fallback nếu maBoPhan không có)
-        $maXuong=$this->getMaXuongByTen(isset($xt['tenXuong'])?$xt['tenXuong']:'');
-        // Nếu không tìm thấy, thử lấy từ maBoPhan
-        if($maXuong==='' && isset($xt['maBoPhan'])){
-            $maXuong = $this->getMaXuongByMaBoPhan($xt['maBoPhan']);
-        };
+        // Nếu user là manager và form gửi tenXuong -> dùng posted tenXuong (và validate công nhân thuộc xưởng đó)
+        $roleNorm = normalizeRole(isset($xt['vaiTro']) ? $xt['vaiTro'] : '');
+        if ($roleNorm === 'manager' && isset($_POST['tenXuong']) && trim($_POST['tenXuong'])!==''){
+            $postedTen = $this->conn ? $this->conn->real_escape_string(trim($_POST['tenXuong'])) : trim($_POST['tenXuong']);
+            $maXuong = $this->getMaXuongByTen($postedTen);
+            // Nếu đã chọn công nhân, kiểm tra nó thuộc xưởng đó
+            if ($maCN !== ''){
+                $escCN = $this->conn->real_escape_string($maCN);
+                $q = "SELECT COUNT(*) AS cnt FROM nguoidung WHERE maNguoiDung='{$escCN}' AND tenXuong='{$postedTen}' AND vaiTro='CongNhan' AND trangThai='HoatDong'";
+                $r = $this->conn->query($q);
+                $cnt = 0;
+                if ($r && $r->num_rows>0){ $rr=$r->fetch_assoc(); $cnt = isset($rr['cnt']) ? intval($rr['cnt']) : 0; }
+                if ($cnt === 0){
+                    if ($isAjax){ header('Content-Type: application/json; charset=utf-8'); echo json_encode(array('success'=>false,'error'=>'Công nhân không thuộc xưởng đã chọn.')); exit; }
+                    $_SESSION['err'] = 'Công nhân không thuộc xưởng đã chọn.'; $this->ghinhan(); return; }
+            }
+        } else {
+            // Lấy maXuong từ tenXuong (fallback nếu maBoPhan không có)
+            $maXuong=$this->getMaXuongByTen(isset($xt['tenXuong'])?$xt['tenXuong']:'');
+            // Nếu không tìm thấy, thử lấy từ maBoPhan
+            if($maXuong==='' && isset($xt['maBoPhan'])){
+                $maXuong = $this->getMaXuongByMaBoPhan($xt['maBoPhan']);
+            };
+        }
 
         $data=array(
             'maNguoiDung'=>$maCN,'tenCongNhan'=>$tenCN,'maXuong'=>$maXuong,
@@ -133,43 +254,55 @@ class SanXuatController {
         );
 
         if ($data['maNguoiDung']==='' || $data['ngayCham']===''){
+            if ($isAjax){ header('Content-Type: application/json; charset=utf-8'); echo json_encode(array('success'=>false,'error'=>'Vui lòng chọn Công nhân và Ngày chấm công.')); exit; }
             $_SESSION['err']='Vui lòng chọn Công nhân và Ngày chấm công.';
             // Hiển thị ngay view ghi nhận với thông báo lỗi (không redirect)
             $this->ghinhan();
             return;
         }
-        // Kiểm tra trùng ca cùng ngày (immediate on-screen debug + error)
+        // Kiểm tra ca có tồn tại trong lịch làm việc (nếu đã chọn ca) — nếu không có thì không cho lưu
         if ($data['maCa']!=='' && $data['maNguoiDung']!=='' && $this->conn){
             $maNV=$this->conn->real_escape_string($data['maNguoiDung']);
             $ngay=$this->conn->real_escape_string($data['ngayCham']);
             $maCa=$this->conn->real_escape_string($data['maCa']);
+            $q = "SELECT COUNT(*) AS cnt FROM lichlamviec WHERE maNguoiDung='{$maNV}' AND ngayLam='{$ngay}' AND maCa='{$maCa}'";
+            $rs=$this->conn->query($q);
+            $cntSch = 0;
+            if ($rs && $rs->num_rows>0){ $rr=$rs->fetch_assoc(); $cntSch = isset($rr['cnt'])? intval($rr['cnt']):0; }
+            if ($cntSch === 0){
+                // Không có lịch cho công nhân này vào ngày/ca đó — trả lỗi
+                if ($isAjax){ header('Content-Type: application/json; charset=utf-8'); echo json_encode(array('success'=>false,'error'=>'Ngày '.htmlspecialchars($data['ngayCham']).' không có ca làm việc để ghi nhận.')); exit; }
+                $_SESSION['err'] = 'Ngày '.htmlspecialchars($data['ngayCham']).' không có ca làm việc để ghi nhận.';
+                $this->ghinhan();
+                return;
+            }
+
+            // Kiểm tra trùng ca cùng ngày (immediate on-screen debug + error)
             $q = "SELECT COUNT(*) AS cnt FROM chamcong WHERE maNguoiDung='{$maNV}' AND ngayCham='{$ngay}' AND maCa='{$maCa}'";
             $rs=$this->conn->query($q);
             if($rs){
                 $row=$rs->fetch_assoc();
                 $cnt = isset($row['cnt']) ? intval($row['cnt']) : 0;
                 if($cnt>0){
-                    // Hiển thị lỗi trực tiếp trên trang (không redirect)
-                    echo '<div class="container my-4"><div class="form-shell">';
-                    echo '<div class="alert alert-danger">⚠️ Công nhân này đã ghi nhận ca '.htmlspecialchars($data['maCa']).' vào ngày '.htmlspecialchars($data['ngayCham']).' rồi.</div>';
-                    echo '<p><strong>DEBUG:</strong> maNguoiDung='.htmlspecialchars($maNV).', ngayCham='.htmlspecialchars($ngay).', maCa='.htmlspecialchars($maCa).', cnt='.$cnt.'</p>';
-                    echo '<p><a href="index.php?controller=sanxuat&action=ghinhan">Quay lại</a></p>';
-                    echo '</div></div>';
+                    // Thiết lập thông báo lỗi và hiển thị lại form ghi nhận
+                    if ($isAjax){ header('Content-Type: application/json; charset=utf-8'); echo json_encode(array('success'=>false,'error'=> '⚠️ Công nhân này đã ghi nhận ca '.htmlspecialchars($data['maCa']).' vào ngày '.htmlspecialchars($data['ngayCham']).' rồi.')); exit; }
+                    $_SESSION['err'] = '⚠️ Công nhân này đã ghi nhận ca '.htmlspecialchars($data['maCa']).' vào ngày '.htmlspecialchars($data['ngayCham']).' rồi.';
+                    $this->ghinhan();
                     return;
                 }
             } else {
-                // Nếu query lỗi, hiện thông báo lỗi trên trang
-                echo '<div class="container my-4"><div class="form-shell">';
-                echo '<div class="alert alert-danger">Lỗi kiểm tra trùng ca: '.htmlspecialchars($this->conn->error).'</div>';
-                echo '<p><a href="index.php?controller=sanxuat&action=ghinhan">Quay lại</a></p>';
-                echo '</div></div>';
+                // Nếu query lỗi, thiết lập thông báo lỗi và hiển thị lại form
+                $_SESSION['err'] = 'Lỗi kiểm tra trùng ca: '.htmlspecialchars($this->conn->error);
+                $this->ghinhan();
                 return;
             }
         }
         // Nếu lưu thành công thì redirect với ok=1, nếu không thì báo lỗi
         if ($this->mChamCong->create($data)) {
+            if ($isAjax){ header('Content-Type: application/json; charset=utf-8'); echo json_encode(array('success'=>true)); exit; }
             $this->redirect('index.php?controller=sanxuat&action=ghinhan&ok=1');
         } else {
+            if ($isAjax){ header('Content-Type: application/json; charset=utf-8'); echo json_encode(array('success'=>false,'error'=>'Lưu thất bại. Vui lòng thử lại.')); exit; }
             $_SESSION['err']='Lưu thất bại. Vui lòng thử lại.';
             // Hiển thị ngay view ghi nhận với thông báo lỗi (không redirect)
             $this->ghinhan();

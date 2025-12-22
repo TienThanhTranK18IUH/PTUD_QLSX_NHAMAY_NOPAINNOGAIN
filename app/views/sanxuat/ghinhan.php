@@ -27,7 +27,33 @@ foreach ($CA_MAP as $ma => $pair) {
       <?php endif; ?>
     </div>
 
+
+
     <form id="ghiNhanForm" method="post" action="index.php?controller=sanxuat&action=save">
+      <?php if (isset($GLOBALS['isManager']) && $GLOBALS['isManager']): ?>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Xưởng trưởng</label>
+          <select id="xuongTruongSelect" class="input" name="tenXuong">
+            <option value="">-- Chọn xưởng trưởng --</option>
+            <?php foreach(isset($dsXuongTruong)?$dsXuongTruong:array() as $xtRow): 
+              $sel = (isset($GLOBALS['selectedTenXuong']) && $GLOBALS['selectedTenXuong']==$xtRow['tenXuong']) ? 'selected' : '';
+            ?>
+              <option value="<?php echo htmlspecialchars($xtRow['tenXuong']); ?>" data-maxuong="<?php echo isset($xtRow['maXuong'])?$xtRow['maXuong']:''; ?>" <?php echo $sel; ?> >
+                <?php echo htmlspecialchars($xtRow['hoTen'].' — '.$xtRow['tenXuong']); ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+          <?php if (empty($dsXuongTruong)): ?>
+            <div class="alert alert-danger" style="margin-top:8px;">⚠️ Không tìm thấy xưởng trưởng (vui lòng kiểm tra trường <code>vaiTro</code> và <code>tenXuong</code> trong bảng <code>nguoidung</code>).</div>
+          <?php endif; ?>
+        </div>
+        <div class="form-group">
+          <label>Mã xưởng</label>
+          <input type="text" class="input" id="maXuongField" name="maXuong" value="<?php echo isset($GLOBALS['selectedMaXuong'])?$GLOBALS['selectedMaXuong']:(isset($GLOBALS['XT']['maXuong'])?$GLOBALS['XT']['maXuong']:''); ?>" readonly>
+        </div>
+      </div>
+      <?php else: ?>
       <div class="grid-2">
         <div class="form-group">
           <label>Xưởng trưởng</label>
@@ -38,6 +64,7 @@ foreach ($CA_MAP as $ma => $pair) {
           <input type="text" class="input" value="<?php echo isset($XT['maXuong'])?$XT['maXuong']:''; ?>" readonly>
         </div>
       </div>
+      <?php endif; ?>
 
       <div class="form-group">
         <label>Chọn công nhân <span class="req">*</span></label>
@@ -105,7 +132,7 @@ foreach ($CA_MAP as $ma => $pair) {
 
       <div class="actions">
         <button type="submit" class="btn-primary">💾 Lưu ghi nhận</button>
-        <a href="index.php?controller=sanxuat&action=ghinhan" class="btn-ghost">Hủy</a>
+        <a href="index.php?controller=sanxuat&action=ghinhan" class="btn-ghost" id="cancelBtn">Hủy</a>
       </div>
     </form>
   </div>
@@ -195,27 +222,119 @@ foreach ($CA_MAP as $ma => $pair) {
   if(g1) g1.addEventListener('change',calcHours);
   if(g2) g2.addEventListener('change',calcHours);
 
+  <?php if (isset($GLOBALS['isManager']) && $GLOBALS['isManager']): ?>
+  // Hàm load công nhân theo tenXuong (AJAX) — chỉ cho quản lý
+  function loadWorkersFor(tenXuong){
+    var sel = document.getElementById('maNguoiDung');
+    if(!sel) return;
+    sel.innerHTML = '<option value="">-- Đang tải công nhân... --</option>';
+    (function(){
+
+      // Use POST so front controller will run without layout and return pure JSON
+      fetch('index.php?controller=sanxuat&action=getWorkers', { method: 'POST', credentials: 'same-origin', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: 'tenXuong='+encodeURIComponent(tenXuong) })
+        .then(function(r){
+          return r.text().then(function(t){
+            var s = 'HTTP/'+r.status+' '+r.statusText+' — body len='+ (t? t.length : 0);
+            try {
+              var json = t ? JSON.parse(t) : null;
+            } catch(e){
+              // nếu response không phải JSON, hiển thị body
+              throw new Error('invalid-json:'+t);
+            }
+            if (!r.ok){
+              throw new Error('server:'+r.status+': '+(typeof json==='object'?JSON.stringify(json):t));
+            }
+            return json;
+          });
+        })
+        .then(function(data){
+          sel.innerHTML = '<option value="">-- Chọn công nhân thuộc xưởng --</option>';
+          if(Array.isArray(data) && data.length>0){
+            data.forEach(function(c){
+              var opt = document.createElement('option');
+              opt.value = c.maNguoiDung;
+              opt.textContent = c.maNguoiDung + ' — ' + c.hoTen;
+              sel.appendChild(opt);
+            });
+          } else {
+            sel.innerHTML = '<option value="">-- Không tìm thấy công nhân --</option>';
+          }
+        })
+        .catch(function(err){ console.error('Lỗi tải công nhân:', err); sel.innerHTML = '<option value="">-- Lỗi khi tải danh sách --</option>'; });
+    })();
+  }
+
+  // Cập nhật mã xưởng và load công nhân khi chọn xưởng trưởng
+  var xuongSel = document.getElementById('xuongTruongSelect');
+  var maXuongFld = document.getElementById('maXuongField');
+  if(xuongSel){
+    var initTen = xuongSel.value ? xuongSel.value : '<?php echo isset($GLOBALS['selectedTenXuong'])?$GLOBALS['selectedTenXuong']:''; ?>';
+    var initMa = xuongSel.options[xuongSel.selectedIndex] ? xuongSel.options[xuongSel.selectedIndex].getAttribute('data-maxuong') : '<?php echo isset($GLOBALS['selectedMaXuong'])?$GLOBALS['selectedMaXuong']:''; ?>';
+    if(maXuongFld && initMa) maXuongFld.value = initMa;
+    if(initTen) loadWorkersFor(initTen);
+
+    xuongSel.addEventListener('change', function(){
+      var ten = this.value;
+      var ma = this.options[this.selectedIndex] ? this.options[this.selectedIndex].getAttribute('data-maxuong') : '';
+      if(maXuongFld) maXuongFld.value = ma;
+      loadWorkersFor(ten);
+    });
+  }
+  <?php endif; ?>
+
+
+
   // Sau khi submit: lưu, hiện thông báo, reset toàn bộ (kể cả CA), để lại ngayCham = hôm nay
   const form = document.getElementById('ghiNhanForm');
   form.addEventListener('submit', function(e){
     e.preventDefault();
-    fetch(this.action, {method:'POST', body:new FormData(this)})
-      .then(r=>r.text())
-      .then(()=>{
-        document.getElementById('msgBox').innerHTML =
-          "<div class='alert alert-success'>✅ Dữ liệu đã được lưu thành công!</div>";
-
-        // reset form
-        this.reset();
-
-        // set lại mặc định
-        document.getElementById('maCa').value = '';            // reset chọn ca
-        document.getElementById('gioVao').value = '';          // clear giờ
-        document.getElementById('gioRa').value  = '';
-        document.getElementById('soGioLam').value = '';
-        document.getElementById('ngayCham').value = todayYMD(); // hôm nay
+    // send AJAX with X-Requested-With header so controller can return JSON
+    fetch(this.action, {method:'POST', body:new FormData(this), headers:{'X-Requested-With':'XMLHttpRequest'}, credentials:'same-origin'})
+      .then(function(r){
+        // prefer to parse JSON when possible
+        var ct = r.headers.get('Content-Type') || '';
+        return r.text().then(function(t){ return { ok: r.ok, status: r.status, body: t, isJson: ct.indexOf('application/json')!==-1 }; });
       })
-      .catch(()=>alert('❌ Có lỗi xảy ra khi lưu dữ liệu!'));
+      .then(function(res){
+        if (!res.ok){ alert('❌ Có lỗi xảy ra khi lưu dữ liệu! (HTTP '+res.status+')'); return; }
+        if (res.isJson){
+          try{ var json = JSON.parse(res.body); }catch(e){ json = null; }
+          if (json && json.success){
+            document.getElementById('msgBox').innerHTML = "<div class='alert alert-success'>✅ Dữ liệu đã được lưu thành công!</div>";
+            form.reset();
+            document.getElementById('maCa').value = '';            // reset chọn ca
+            document.getElementById('gioVao').value = '';          // clear giờ
+            document.getElementById('gioRa').value  = '';
+            document.getElementById('soGioLam').value = '';
+            document.getElementById('ngayCham').value = todayYMD(); // hôm nay
+          } else if (json && !json.success){
+            document.getElementById('msgBox').innerHTML = "<div class='alert alert-danger'>❌ "+(json.error? json.error : 'Lưu thất bại')+"</div>";
+          } else {
+            // Unexpected JSON shape
+            document.getElementById('msgBox').innerHTML = "<div class='alert alert-danger'>❌ Lỗi máy chủ (không thể phân tích phản hồi)</div>";
+          }
+        } else {
+          // Non-JSON (probably HTML view) -> replace current document body
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(res.body, 'text/html');
+          if (doc && doc.body){ document.body.innerHTML = doc.body.innerHTML; }
+        }
+      })
+      .catch(function(){ alert('❌ Có lỗi xảy ra khi lưu dữ liệu!'); });
   });
+
+  // Confirm cancel action for xưởng trưởng và quản lý
+  (function(){
+    var cancel = document.getElementById('cancelBtn');
+    if (!cancel) return;
+    var canCancel = <?php echo (isset($GLOBALS['canCancel']) && $GLOBALS['canCancel']) ? 'true' : 'false'; ?>;
+    if(!canCancel) return;
+    cancel.addEventListener('click', function(e){
+      e.preventDefault();
+      if (confirm('Bạn có chắc muốn hủy lập phiếu không? Dữ liệu đã nhập sẽ không được lưu.')) {
+        location.href = this.getAttribute('href');
+      }
+    });
+  })();
 })();
 </script>

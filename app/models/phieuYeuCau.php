@@ -188,6 +188,15 @@ class PhieuYeuCau {
             if($kh && isset($kh['MaXuong'])) $maXuong = $this->safe($kh['MaXuong']);
         }
 
+        // 3b) Kiểm tra trùng: nếu đã tồn tại phiếu cho kế hoạch này thì không tạo nữa
+        if ($maKH !== ''){
+            $chk = $this->db->query("SELECT 1 FROM {$this->TBL_HDR} WHERE maKeHoach='{$maKH}' LIMIT 1");
+            if (is_array($chk) && count($chk) > 0){
+                $this->lastError = 'Đã tồn tại phiếu cho kế hoạch này.';
+                return '';
+            }
+        }
+
         // 4) Tổng SL
         $tongSL = 0;
         if ($kh && isset($kh['SoLuongNL'])) $tongSL = (int)$kh['SoLuongNL'];
@@ -247,6 +256,15 @@ class PhieuYeuCau {
                               VALUES ('{$maPhieu}','{$ma}','{$ten}',{$sl})";
                     $this->dbWrite($sqlD2);
                 }
+            }
+        }
+
+        // Nếu phiếu liên quan tới một kế hoạch, cập nhật trạng thái kế hoạch sang 'Đang thực hiện' (match UI)
+        if ($maKH !== ''){
+            $sqlUpdate = "UPDATE kehoachsanxuat SET trangThai = 'Đang thực hiện' WHERE maKeHoach = '{$maKH}' AND (trangThai = 'Chua bat dau' OR trangThai = 'Chưa bắt đầu' OR trangThai = '' OR trangThai IS NULL)";
+            if (!$this->dbWrite($sqlUpdate)){
+                // Không làm thất bại việc tạo phiếu, nhưng ghi cảnh báo để debug
+                $this->lastError .= ' | Warning: failed updating kehoach status';
             }
         }
 

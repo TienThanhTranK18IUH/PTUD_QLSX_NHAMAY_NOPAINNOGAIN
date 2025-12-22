@@ -203,9 +203,27 @@ textarea{min-height:100px;resize:vertical;}
 
     <div class="actions">
       <button type="submit" class="btn primary">XÁC NHẬN LẬP PHIẾU</button>
-      <button type="reset"  class="btn secondary">HỦY</button>
+      <button type="button" id="cancelBtn" class="btn secondary">HỦY</button>
     </div>
   </form>
 </div>
+
+<script>
+(function(){
+  var cancelBtn = document.getElementById('cancelBtn');
+  if(!cancelBtn) return;
+  var canCancel = <?php echo (isset($canCancel) && $canCancel) ? 'true' : 'false'; ?>;
+  cancelBtn.addEventListener('click', function(){
+    if (canCancel){
+      if (confirm('Bạn có chắc muốn hủy lập phiếu không? Dữ liệu đã nhập sẽ không được lưu.')){
+        window.location.href = 'index.php?controller=phieu&action=index';
+      }
+    } else {
+      var f = cancelBtn.closest('form'); if (f) f.reset();
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

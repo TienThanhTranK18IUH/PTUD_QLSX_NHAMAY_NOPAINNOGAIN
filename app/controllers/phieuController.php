@@ -92,6 +92,9 @@ class PhieuController {
             }
         }
 
+        // allow cancel confirmation for leaders and managers
+        $canCancel = checkRole(array('manager','leader'));
+
         include 'app/views/phieu/yeucau_nguyenlieu.php';
     }
 
