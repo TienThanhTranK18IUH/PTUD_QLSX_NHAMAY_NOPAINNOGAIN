@@ -1,4 +1,4 @@
-:<div class="content" style="max-width:1200px; margin:auto; padding:20px; font-family:Arial, sans-serif; color:#2c3e50;">
+<div class="content" style="max-width:1200px; margin:auto; padding:20px; font-family:Arial, sans-serif; color:#2c3e50;">
     <h2 style="text-align:center; margin-bottom:25px;">📋 Danh sách Kế hoạch sản xuất</h2>
 
     <?php
@@ -96,7 +96,7 @@ $headers = array('Mã KH','Xưởng','Sản phẩm','Đơn hàng','Ngày bắt �
                 // Form chỉnh sửa
                 echo '<tr id="editForm_'.$kh['maKeHoach'].'" style="display:none; background:#fafafa;">
                         <td colspan="12" style="padding:10px;">
-                            <form method="post" action="" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; align-items:center; border:1px solid #ddd; padding:12px; border-radius:6px; background:#fff;">
+                            <form method="post" action="" class="kh-edit-form" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; align-items:center; border:1px solid #ddd; padding:12px; border-radius:6px; background:#fff;">
                                 <input type="hidden" name="maKeHoach" value="'.$kh['maKeHoach'].'">
 
                                 <select name="maXuong" style="padding:6px; border-radius:4px; border:1px solid #ccc;display:none;">';
@@ -106,7 +106,8 @@ $headers = array('Mã KH','Xưởng','Sản phẩm','Đơn hàng','Ngày bắt �
                                 }
                 echo            '</select>
 
-                                <input type="text" name="tenSP" value="'.$kh['tenSP'].'" placeholder="Tên sản phẩm" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <input type="text" name="tenSP" class="kh-field" value="'.$kh['tenSP'].'" placeholder="Tên sản phẩm" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <div class="field-error" style="color:#c0392b;font-size:12px;display:none;margin-top:4px;"></div>
 
                                 <select name="maDonHang" style="padding:6px; border-radius:4px; border:1px solid #ccc;display:none;">';
                                 foreach($donhangs as $dh){
@@ -115,9 +116,12 @@ $headers = array('Mã KH','Xưởng','Sản phẩm','Đơn hàng','Ngày bắt �
                                 }
                 echo            '</select>
 
-                                <input type="date" name="ngayBatDau" value="'.$kh['ngayBatDau'].'" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
-                                <input type="date" name="ngayKetThuc" value="'.$kh['ngayKetThuc'].'" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
-                                <input type="number" name="tongSoLuong" value="'.$kh['tongSoLuong'].'" placeholder="Tổng SL" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <input type="date" name="ngayBatDau" class="kh-field" value="'.$kh['ngayBatDau'].'" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <div class="field-error" style="color:#c0392b;font-size:12px;display:none;margin-top:4px;"></div>
+                                <input type="date" name="ngayKetThuc" class="kh-field" value="'.$kh['ngayKetThuc'].'" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <div class="field-error" style="color:#c0392b;font-size:12px;display:none;margin-top:4px;"></div>
+                                <input type="number" name="tongSoLuong" class="kh-field" value="'.$kh['tongSoLuong'].'" placeholder="Tổng SL" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <div class="field-error" style="color:#c0392b;font-size:12px;display:none;margin-top:4px;"></div>
 
                                 <select name="trangThai" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
                                     <option '.($kh['trangThai']=='Chưa bắt đầu'?'selected':'').'>Chưa bắt đầu</option>
@@ -125,7 +129,7 @@ $headers = array('Mã KH','Xưởng','Sản phẩm','Đơn hàng','Ngày bắt �
                                     <option '.($kh['trangThai']=='Hoàn thành'?'selected':'').'>Hoàn thành</option>
                                     <option '.($kh['trangThai']=='Tạm dừng'?'selected':'').'>Tạm dừng</option>
                                 </select>
-                                <select name="maNguyenLieu" onchange="this.nextElementSibling.value=this.options[this.selectedIndex].getAttribute(\'data-ten\')" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <select name="maNguyenLieu" class="kh-field" onchange="this.nextElementSibling.value=this.options[this.selectedIndex].getAttribute(\'data-ten\')" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
                                     <option value="">--Chọn Mã NL--</option>';
                                     foreach($nguyenlieus as $nl){
                                         $sel = $nl['maNguyenLieu']==$kh['maNguyenLieu']?'selected':'';
@@ -134,7 +138,9 @@ $headers = array('Mã KH','Xưởng','Sản phẩm','Đơn hàng','Ngày bắt �
                 echo                '</select>
 
                                 <input type="text" name="tenNguyenLieu" value="'.$kh['tenNguyenLieu'].'" placeholder="Tên NL" readonly style="padding:6px; border-radius:4px; border:1px solid #ccc;">
-                                <input type="number" name="soLuongNguyenLieu" value="'.$kh['soLuongNguyenLieu'].'" placeholder="SL NL" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <div class="field-error" style="color:#c0392b;font-size:12px;display:none;margin-top:4px;"></div>
+                                <input type="number" name="soLuongNguyenLieu" class="kh-field" value="'.$kh['soLuongNguyenLieu'].'" placeholder="SL NL" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+                                <div class="field-error" style="color:#c0392b;font-size:12px;display:none;margin-top:4px;"></div>
 
                                 
 
@@ -164,4 +170,101 @@ function toggleEditForm(maKeHoach){
         row.style.display = 'none';
     }
 }
+</script>
+
+<script type="text/javascript">
+// Realtime validation (focusout / input) for edit forms
+(function(){
+    function showError(el, msg){
+        el.style.borderColor = '#e74c3c';
+        var next = el.nextElementSibling;
+        if(next && next.classList.contains('field-error')){
+            next.textContent = msg;
+            next.style.display = 'block';
+        }
+    }
+    function clearError(el){
+        el.style.borderColor = '';
+        var next = el.nextElementSibling;
+        if(next && next.classList.contains('field-error')){
+            next.textContent = '';
+            next.style.display = 'none';
+        }
+    }
+    function validateField(el){
+        var name = el.name;
+        var v = (el.value||'').toString().trim();
+        if(name === 'tenSP'){
+            if(!v) { showError(el, 'Tên sản phẩm không được để trống'); return false; }
+            clearError(el); return true;
+        }
+        if(name === 'ngayBatDau' || name === 'ngayKetThuc'){
+            var form = el.form;
+            var start = form.querySelector('[name="ngayBatDau"]').value;
+            var end = form.querySelector('[name="ngayKetThuc"]').value;
+            if(!start){ showError(form.querySelector('[name="ngayBatDau"]'), 'Chưa chọn ngày bắt đầu'); }
+            if(!end){ showError(form.querySelector('[name="ngayKetThuc"]'), 'Chưa chọn ngày kết thúc'); }
+            if(start && end){
+                if(new Date(end) < new Date(start)){
+                    showError(form.querySelector('[name="ngayKetThuc"]'), 'Ngày kết thúc phải >= ngày bắt đầu');
+                    return false;
+                } else {
+                    clearError(form.querySelector('[name="ngayBatDau"]'));
+                    clearError(form.querySelector('[name="ngayKetThuc"]'));
+                    return true;
+                }
+            }
+            return false;
+        }
+        if(name === 'tongSoLuong'){
+            if(!v || isNaN(v) || parseInt(v) <= 0){ showError(el, 'Tổng SL phải là số nguyên dương'); return false; }
+            clearError(el); return true;
+        }
+        if(name === 'maNguyenLieu'){
+            if(!v){ showError(el, 'Vui lòng chọn nguyên liệu'); return false; }
+            clearError(el); return true;
+        }
+        if(name === 'soLuongNguyenLieu'){
+            if(!v || isNaN(v) || parseInt(v) <= 0){ showError(el, 'SL NL phải là số nguyên dương'); return false; }
+            var form = el.form;
+            var tong = parseInt(form.querySelector('[name="tongSoLuong"]').value) || 0;
+            var nl = parseInt(v);
+            clearError(el); return true;
+        }
+        return true;
+    }
+
+    // Validate on blur (use focusout which bubbles)
+    document.addEventListener('focusout', function(e){
+        var el = e.target;
+        if(el && el.classList && el.classList.contains('kh-field')){
+            validateField(el);
+        }
+    }, true);
+
+    // Clear error as user types
+    document.addEventListener('input', function(e){
+        var el = e.target;
+        if(el && el.classList && el.classList.contains('kh-field')){
+            clearError(el);
+        }
+    });
+
+    // Intercept submit to validate all fields in that form
+    document.addEventListener('submit', function(e){
+        var form = e.target;
+        if(form && form.classList && form.classList.contains('kh-edit-form')){
+            var valid = true;
+            var fields = form.querySelectorAll('.kh-field');
+            fields.forEach(function(f){ if(!validateField(f)) valid = false; });
+            if(!valid){
+                e.preventDefault();
+                // show first invalid and scroll
+                var first = form.querySelector('.field-error[style*="display: block"]');
+                if(first){ first.previousElementSibling.scrollIntoView({behavior:'smooth', block:'center'}); }
+            }
+        }
+    }, true);
+
+})();
 </script>

@@ -31,63 +31,40 @@ class KeHoachController {
         include dirname(__FILE__) . '/../views/kehoach/form_edit.php';
     }
 
-    // Cập nhật kế hoạch
-    public function update() {
-        // Only planners and managers may update plans
-        requireRole(array('manager','planner'));
+  // Cập nhật kế hoạch
+public function update() {
+    // Only planners and managers may update plans
+    requireRole(array('manager','planner'));
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['maKeHoach'])) {
-            $maKH = $_POST['maKeHoach'];
-            $maDonHang = $_POST['maDonHang'];
-            $tenSP = $_POST['tenSP'];
-            $tenXuong = $_POST['tenXuong'];
-            $ngayBatDau = $_POST['ngayBatDau'];
-            $ngayKetThuc = $_POST['ngayKetThuc'];
-            $tongSL = intval($_POST['tongSoLuong']);
-            $maNL = $_POST['maNguyenLieu'];
-            $tenNL = $_POST['tenNguyenLieu'];
-            $slNL = intval($_POST['soLuongNguyenLieu']);
-            $trangThai = $_POST['trangThai'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['maKeHoach'])) {
 
-            // Lấy tên người lập từ session
-            $nguoiLap = isset($_SESSION['user']['hoTen']) ? $_SESSION['user']['hoTen'] : '';
+        // Lấy tên người lập từ session
+        $_POST['nguoiLap'] = isset($_SESSION['user']['hoTen'])
+            ? $_SESSION['user']['hoTen']
+            : '';
 
-            $conn = $this->model->getConnection();
+        try {
+            // GỌI MODEL – KHÔNG SQL Ở CONTROLLER
+            $this->model->updateKeHoach($_POST);
 
-            // --- Lấy mã xưởng từ tên xưởng ---
-            $tenXuongEsc = mysqli_real_escape_string($conn, $tenXuong);
-            $resX = mysqli_query($conn, "SELECT maXuong FROM xuong WHERE tenXuong='$tenXuongEsc' LIMIT 1");
-            $rowX = mysqli_fetch_assoc($resX);
-            $maXuong = $rowX ? $rowX['maXuong'] : null;
+            // LƯU THÀNH CÔNG → LOAD LẠI TRANG
+            header("Location: index.php?controller=keHoach&action=form_edit");
+            exit;
 
-            // --- Cập nhật tên sản phẩm trong DonHang ---
-            $tenSPEsc = mysqli_real_escape_string($conn, $tenSP);
-            $maDonHangEsc = mysqli_real_escape_string($conn, $maDonHang);
-            $sqlDH = "UPDATE donhang SET tenSP='$tenSPEsc' WHERE maDonHang='$maDonHangEsc'";
-            mysqli_query($conn, $sqlDH);
+        } catch (Exception $e) {
+            // Nếu lỗi, quay lại form edit (có thể gán message nếu muốn)
+            $error = $e->getMessage();
 
-            // --- Cập nhật kế hoạch ---
-            $sqlKH = "UPDATE kehoachsanxuat SET 
-                        maXuong='$maXuong',
-                        maDonHang='$maDonHangEsc',
-                        ngayBatDau='$ngayBatDau',
-                        ngayKetThuc='$ngayKetThuc',
-                        tongSoLuong=$tongSL,
-                        maNguyenLieu='$maNL',
-                        tenNguyenLieu='".mysqli_real_escape_string($conn, $tenNL)."',
-                        soLuongNguyenLieu=$slNL,
-                        trangThai='".mysqli_real_escape_string($conn, $trangThai)."',
-                        nguoiLap='".mysqli_real_escape_string($conn, $nguoiLap)."'
-                      WHERE maKeHoach='$maKH'";
-            mysqli_query($conn, $sqlKH);
+            $kehoachs = $this->model->getAll();
+            $xuongs = $this->model->getAllXuongs();
+            $sanphams = $this->model->getAllSanPhams();
+            $donhangs = $this->model->getAllDonHangs();
+            $nguyenlieus = $this->model->getAllNguyenLieus();
 
-            mysqli_close($conn);
-
-            header("Location: index.php?controller=kehoach&action=index");
-            exit();
+            include dirname(__FILE__) . '/../views/kehoach/form_edit.php';
         }
     }
-
+}
     // Tạo kế hoạch mới
     public function lapKeHoach() {
         // Only planners and managers may create new plans

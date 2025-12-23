@@ -94,13 +94,15 @@ public function getAllNguyenLieus() {
 
     return $nguyenlieus;
 }
-public function updateKeHoach($maKH, $data) {
-    // Lấy connection
+public function updateKeHoach($data) {
+
     $conn = $this->conn;
 
-    // Escape dữ liệu để an toàn
+    // Escape dữ liệu
+    $maKH = mysqli_real_escape_string($conn, $data['maKeHoach']);
     $maXuong = mysqli_real_escape_string($conn, $data['maXuong']);
     $maDonHang = mysqli_real_escape_string($conn, $data['maDonHang']);
+    $tenSP = mysqli_real_escape_string($conn, $data['tenSP']);
     $ngayBatDau = mysqli_real_escape_string($conn, $data['ngayBatDau']);
     $ngayKetThuc = mysqli_real_escape_string($conn, $data['ngayKetThuc']);
     $tongSoLuong = intval($data['tongSoLuong']);
@@ -108,11 +110,22 @@ public function updateKeHoach($maKH, $data) {
     $tenNguyenLieu = mysqli_real_escape_string($conn, $data['tenNguyenLieu']);
     $soLuongNguyenLieu = intval($data['soLuongNguyenLieu']);
     $trangThai = mysqli_real_escape_string($conn, $data['trangThai']);
-    $maKH = mysqli_real_escape_string($conn, $maKH);
-    $nguoiLap = mysqli_real_escape_string($conn, $data['nguoiLap']);
+    $nguoiLap = isset($data['nguoiLap'])
+        ? mysqli_real_escape_string($conn, $data['nguoiLap'])
+        : '';
 
-    // Tạo câu lệnh UPDATE
-    $sql = "UPDATE kehoachsanxuat SET 
+    /* ==========================
+       1. Update tên sản phẩm
+    ========================== */
+    $sqlSP = "UPDATE donhang 
+              SET tenSP='$tenSP'
+              WHERE maDonHang='$maDonHang'";
+    mysqli_query($conn, $sqlSP);
+
+    /* ==========================
+       2. Update kế hoạch SX
+    ========================== */
+    $sqlKH = "UPDATE kehoachsanxuat SET
                 maXuong='$maXuong',
                 maDonHang='$maDonHang',
                 ngayBatDau='$ngayBatDau',
@@ -123,12 +136,13 @@ public function updateKeHoach($maKH, $data) {
                 soLuongNguyenLieu=$soLuongNguyenLieu,
                 trangThai='$trangThai',
                 nguoiLap='$nguoiLap'
-            WHERE maKeHoach='$maKH'";
+              WHERE maKeHoach='$maKH'";
 
-    // Thực hiện câu lệnh
-    if (!mysqli_query($conn, $sql)) {
-        die("Lỗi cập nhật kế hoạch: " . mysqli_error($conn));
+    if (!mysqli_query($conn, $sqlKH)) {
+        throw new Exception("Lỗi cập nhật kế hoạch: " . mysqli_error($conn));
     }
+
+    return true;
 }
     public function checkDuplicatePlan($data) {
         $conn = $this->conn;
