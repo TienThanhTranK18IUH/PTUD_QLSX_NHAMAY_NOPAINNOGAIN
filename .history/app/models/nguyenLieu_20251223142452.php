@@ -1,4 +1,4 @@
-<?php declare(strict_types=1); 
+<?php
 require_once 'app/models/Database.php';
 
 class NguyenLieu {
@@ -43,13 +43,6 @@ class NguyenLieu {
         $stmt = $conn->prepare("UPDATE nguyenlieu SET soLuongTon = ? WHERE maNguyenLieu = ?");
         $stmt->bind_param("is", $soLuongMoi, $maNguyenLieu);
         return $stmt->execute();
-    }
-
-        // Lấy số lượng tồn kho hiện tại của một nguyên liệu
-    public function getSoLuongTonKho($maNguyenLieu) {
-        $sql = "SELECT soLuongTon FROM nguyenlieu WHERE maNguyenLieu = '" . $this->db->conn->real_escape_string($maNguyenLieu) . "'";
-        $result = $this->db->query($sql);
-        return !empty($result) ? (int)$result[0]['soLuongTon'] : 0;
     }
 
 }

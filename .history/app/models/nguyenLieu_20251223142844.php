@@ -1,4 +1,4 @@
-<?php declare(strict_types=1); 
+<?php
 require_once 'app/models/Database.php';
 
 class NguyenLieu {
