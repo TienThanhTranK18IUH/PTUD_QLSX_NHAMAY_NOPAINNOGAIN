@@ -24,10 +24,14 @@ class PhieuKTTP {
 
     /* ===== queries ===== */
     public function getThanhPhamChoKiemTra() {
-        // Trả về tất cả thành phẩm để hiển thị trên form kiểm tra
-        $sql = "SELECT maTP, tenTP, soLuong
-                FROM thanhpham
-                ORDER BY tenTP ASC";
+        // Trả về các thành phẩm chưa từng được lập phiếu kiểm tra (chưa có trong phieukiemtrathanhpham)
+        $sql = "SELECT tp.maTP, tp.tenTP, tp.soLuong
+                FROM thanhpham tp
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM phieukiemtrathanhpham k WHERE k.maTP = tp.maTP
+                )
+                AND tp.soLuong > 0
+                ORDER BY tp.tenTP ASC";
         $rs = $this->conn->query($sql);
         $out = array();
         if ($rs) while ($row = $rs->fetch_assoc()) $out[] = $row;
