@@ -24,9 +24,10 @@ class PhieuKTTP {
 
     /* ===== queries ===== */
     public function getThanhPhamChoKiemTra() {
-        $sql = "SELECT maTP, tenTP, soLuong, tinhTrang
+        // Trả về tất cả thành phẩm để hiển thị trên form kiểm tra
+        $sql = "SELECT maTP, tenTP, soLuong
                 FROM thanhpham
-                WHERE tinhTrang='Chờ kiểm tra'";
+                ORDER BY tenTP ASC";
         $rs = $this->conn->query($sql);
         $out = array();
         if ($rs) while ($row = $rs->fetch_assoc()) $out[] = $row;
@@ -95,10 +96,7 @@ class PhieuKTTP {
     $ok = $this->conn->query($sql);
     if (!$ok) return false;
 
-    // cập nhật tình trạng thành phẩm
-    $tinhTrang = ($ketQua === 'Đạt') ? 'Đạt' : 'Không đạt';
-    $this->conn->query("UPDATE thanhpham SET tinhTrang='{$tinhTrang}' WHERE maTP='{$maTP}'");
-
+    // Lưu phiếu kiểm tra thành công (không cập nhật cột tinhTrang vì đã bị xóa)
     return true;
 }
 

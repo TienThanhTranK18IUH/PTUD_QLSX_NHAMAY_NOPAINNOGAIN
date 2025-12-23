@@ -39,19 +39,18 @@ class ThanhPham {
         $maTP = $this->generateMaTP();
         $tenTP = $data['tenTP'];
         $soLuong = $data['soLuong'];
-        $tinhTrang = $data['tinhTrang'];
         $maKeHoach = $data['maKeHoach'];
         $maKho = $data['maKho'];
         $tenKho = $data['tenKho'];
         $maXuong = $data['maXuong'];
 
-        $sql = "INSERT INTO thanhpham (maTP, tenTP, soLuong, tinhTrang, maKeHoach, maKho, tenKho, maXuong)
-                VALUES ('$maTP', '$tenTP', $soLuong, '$tinhTrang', '$maKeHoach', '$maKho', '$tenKho', '$maXuong')";
+        $sql = "INSERT INTO thanhpham (maTP, tenTP, soLuong, maKeHoach, maKho, tenKho, maXuong)
+                VALUES ('$maTP', '$tenTP', $soLuong, '$maKeHoach', '$maKho', '$tenKho', '$maXuong')";
         return $this->db->query($sql);
     }
      // Lấy theo khoảng ngày
     public function getByDateRange($from, $to){
-        $sql = "SELECT tp.maTP, tp.tenTP, tp.soLuong, tp.tinhTrang, tp.maKeHoach, kh.maXuong, tp.ngayLap
+        $sql = "SELECT tp.maTP, tp.tenTP, tp.soLuong, tp.maKeHoach, kh.maXuong, tp.ngayLap
                 FROM thanhpham tp
                 LEFT JOIN kehoachsanxuat kh ON tp.maKeHoach = kh.maKeHoach
                 WHERE tp.ngayLap BETWEEN '$from' AND '$to'

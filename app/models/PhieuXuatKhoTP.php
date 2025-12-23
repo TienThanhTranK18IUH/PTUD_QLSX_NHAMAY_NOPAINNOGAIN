@@ -13,10 +13,13 @@ class PhieuXuatKhoTP {
     // ===============================
     public function getThanhPhamDat() {
 
-    $sql = "SELECT maTP, tenTP, maKeHoach, maXuong, soLuong
-            FROM thanhpham
-            WHERE tinhTrang = 'Đạt'
-              AND soLuong > 0";
+    $sql = "SELECT tp.maTP, tp.tenTP, tp.maKeHoach, tp.maXuong, tp.soLuong
+            FROM thanhpham tp
+            WHERE tp.soLuong > 0
+              AND EXISTS (
+                  SELECT 1 FROM phieukiemtrathanhpham k
+                  WHERE k.maTP = tp.maTP AND k.ketQua = 'Đạt'
+              )";
 
     $result = $this->db->query($sql);
     $data = array();

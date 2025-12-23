@@ -36,14 +36,13 @@ class GhiNhanThanhPhamController {
         $maTP = $_POST['maTP'];
         $tenTP = $_POST['tenTP'];
         $soLuong = $_POST['soLuong'];
-        $tinhTrang = $_POST['tinhTrang'];
         $maKeHoach = $_POST['maKeHoach'];
         $maKho = $_POST['maKho'];
         $tenKho = $_POST['tenKho'];
         $maXuong = $_POST['maXuong'];
 
-        $sql = "INSERT INTO thanhpham(maTP, tenTP, soLuong, tinhTrang, maKeHoach, maKho, tenKho, maXuong)
-                VALUES ('$maTP','$tenTP','$soLuong','$tinhTrang','$maKeHoach','$maKho','$tenKho','$maXuong')";
+        $sql = "INSERT INTO thanhpham(maTP, tenTP, soLuong, maKeHoach, maKho, tenKho, maXuong)
+                VALUES ('$maTP','$tenTP','$soLuong','$maKeHoach','$maKho','$tenKho','$maXuong')";
         $result = $this->db->conn->query($sql);
 
         if($result){

@@ -271,13 +271,7 @@ $tenTP_popup = isset($tenTP) ? $tenTP : '';
                         <label>Mã Xưởng:</label>
                         <input type="text" name="maXuong" id="maXuong" readonly class="form-control readonly-input">
                     </div>
-                    <div class="col-md-6">
-                        <label>Tình trạng:</label>
-                        <select name="tinhTrang" class="form-select">
-                            <option value="Chờ kiểm tra">Chờ kiểm tra</option>
-                            
-                        </select>
-                    </div>
+
                 </div>
             </div>
 
