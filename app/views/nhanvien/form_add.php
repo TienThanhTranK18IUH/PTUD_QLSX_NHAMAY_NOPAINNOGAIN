@@ -48,16 +48,16 @@ $boPhanXuong = array(
         </select><br><br>
 
         <label><b>Ngày sinh:</b></label><br>
-        <input type="date" name="ngaySinh" style="width:100%;"><br><br>
+        <input type="date" name="ngaySinh" style="width:100%;" required><br><br>
 
         <label><b>Địa chỉ:</b></label><br>
-        <input type="text" name="diaChi" placeholder="Nhập địa chỉ" style="width:100%;"><br><br>
+        <input type="text" name="diaChi" placeholder="Nhập địa chỉ" style="width:100%;" required><br><br>
 
         <label><b>Email:</b></label><br>
-        <input type="email" name="email" placeholder="example@gmail.com" style="width:100%;"><br><br>
+        <input type="email" name="email" placeholder="example@gmail.com" style="width:100%;" required><br><br>
 
         <label><b>Số điện thoại:</b></label><br>
-        <input type="text" name="soDienThoai" placeholder="VD: 0912345678" style="width:100%;"><br><br>
+        <input type="text" name="soDienThoai" placeholder="VD: 0912345678" style="width:100%;" required pattern="[0-9]{9,12}" title="Nhập số điện thoại (9-12 chữ số)"><br><br>
 
         <label><b>Bộ phận:</b></label><br>
         <select name="maBoPhan" style="width:100%;" required>
@@ -81,7 +81,7 @@ $boPhanXuong = array(
         </select><br><br>
 
         <label><b>Trạng thái:</b></label><br>
-        <select name="trangThai" style="width:100%;">
+        <select name="trangThai" style="width:100%;" required>
             <option value="HoatDong" selected>Hoạt động</option>
           
         </select><br><br>
